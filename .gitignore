@@ -1,5 +1,4 @@
 .idea
-.dockerignore
 .env
 
 **/bin
