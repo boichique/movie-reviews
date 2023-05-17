@@ -1,1 +1,5 @@
 .idea
+.dockerignore
+.env
+
+**/bin
