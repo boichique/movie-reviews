@@ -17,6 +17,7 @@ import (
 
 const (
 	dbConnectTimeout = 10 * time.Second
+	gracefulTimeout  = 10 * time.Second
 )
 
 func main() {
@@ -25,9 +26,6 @@ func main() {
 	cfg, err := config.NewConfig()
 	failOnError(err, "parse config")
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT)
-
 	db, err := getDB(context.Background(), cfg.DBUrl)
 	failOnError(err, "connect to database")
 
@@ -35,10 +33,12 @@ func main() {
 	failOnError(err, "ping database")
 
 	go func() {
-		sig := <-sigChan
-		log.Printf("\nreceived signal %s. Shutting down...\n", sig)
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT)
+		<-sigCh
+		log.Println("received interrupt signal. Shutting down...")
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), gracefulTimeout)
 		defer cancel()
 
 		if err := e.Shutdown(ctx); err != nil {
