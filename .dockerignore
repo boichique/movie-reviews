@@ -1,4 +1,6 @@
 .gitignore
 
-Dockerfile
-docker-compose.yaml
+tern
+
+**/Dockerfile
+**/docker-compose.yaml

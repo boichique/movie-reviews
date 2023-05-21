@@ -10,7 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cloudmachinery/movie-reviews/internal/config"
+	"github.com/boichique/movie-reviews/internal/config"
+	"github.com/boichique/movie-reviews/internal/jwt"
+	"github.com/boichique/movie-reviews/internal/modules/auth"
+	"github.com/boichique/movie-reviews/internal/modules/users"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
@@ -29,8 +32,13 @@ func main() {
 	db, err := getDB(context.Background(), cfg.DBUrl)
 	failOnError(err, "connect to database")
 
-	err = db.Ping(context.Background())
-	failOnError(err, "ping database")
+	jwtService := jwt.NewService(cfg.Jwt.Secret, cfg.Jwt.AccessExpiration)
+	usersModule := users.NewModule(db)
+	authModule := auth.NewModule(usersModule.Service, jwtService)
+
+	e.POST("/api/auth/register", authModule.Handler.Register)
+	e.POST("/api/auth/login", authModule.Handler.Login)
+	e.GET("/api/users", usersModule.Handler.GetUsers)
 
 	go func() {
 		sigCh := make(chan os.Signal, 1)
