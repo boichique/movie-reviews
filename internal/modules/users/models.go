@@ -2,6 +2,12 @@ package users
 
 import "time"
 
+const (
+	UserRole   = "user"
+	EditorRole = "editor"
+	AdminRole  = "admin"
+)
+
 type User struct {
 	ID        int64      `json:"id"`
 	Username  string     `json:"username"`
@@ -22,8 +28,7 @@ type UserWithPassword struct {
 }
 
 func newUserWithPassword() *UserWithPassword {
-	user := &User{}
 	return &UserWithPassword{
-		User: user,
+		User: &User{},
 	}
 }

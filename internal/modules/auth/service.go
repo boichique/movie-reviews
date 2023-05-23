@@ -32,7 +32,7 @@ func (s *Service) Register(ctx context.Context, user *users.User, password strin
 		PasswordHash: string(passHash),
 	}
 
-	return s.userService.Create(ctx, userWithPassword)
+	return s.userService.CreateUser(ctx, userWithPassword)
 }
 
 func (s *Service) Login(ctx context.Context, email, password string) (string, error) {

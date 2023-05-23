@@ -14,6 +14,7 @@ import (
 	"github.com/boichique/movie-reviews/internal/jwt"
 	"github.com/boichique/movie-reviews/internal/modules/auth"
 	"github.com/boichique/movie-reviews/internal/modules/users"
+	"github.com/boichique/movie-reviews/internal/validation"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
@@ -25,6 +26,7 @@ const (
 
 func main() {
 	e := echo.New()
+	validation.SetupValidators()
 
 	cfg, err := config.NewConfig()
 	failOnError(err, "parse config")
@@ -36,9 +38,16 @@ func main() {
 	usersModule := users.NewModule(db)
 	authModule := auth.NewModule(usersModule.Service, jwtService)
 
-	e.POST("/api/auth/register", authModule.Handler.Register)
-	e.POST("/api/auth/login", authModule.Handler.Login)
-	e.GET("/api/users", usersModule.Handler.GetUsers)
+	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
+
+	apiAuth := e.Group("/api/auth")
+	apiAuth.POST("/register", authModule.Handler.Register)
+	apiAuth.POST("/login", authModule.Handler.Login)
+
+	apiUsers := e.Group("/api/users")
+	apiUsers.GET("/:userID", usersModule.Handler.Get)
+	apiUsers.PUT("/:userID", usersModule.Handler.Update, authMiddleware, auth.Self)
+	apiUsers.DELETE("/:userID", usersModule.Handler.Delete, authMiddleware, auth.Self)
 
 	go func() {
 		sigCh := make(chan os.Signal, 1)
