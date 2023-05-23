@@ -22,7 +22,7 @@ func Self(next echo.HandlerFunc) echo.HandlerFunc {
 func Editor(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		claims := jwt.GetClaims(c)
-		if claims.Role == users.AdminRole || claims.Subject == users.EditorRole {
+		if claims.Role == users.AdminRole || claims.Role == users.EditorRole {
 			return next(c)
 		}
 

@@ -57,7 +57,7 @@ func (r *Repository) GetExistingUserByID(ctx context.Context, userID int) (*User
 	err := r.db.
 		QueryRow(
 			ctx,
-			`SELECT id, username, email, role, created_at ,bio 
+			`SELECT id, username, email, role, created_at, bio 
 			FROM users 
 			WHERE id = $1 
 			AND deleted_at IS NULL`,
@@ -98,9 +98,9 @@ func (r *Repository) DeleteUser(ctx context.Context, userID int) error {
 		Exec(
 			ctx,
 			`UPDATE users 
-		SET deleted_at = NOW()
-		WHERE id = $1
-		AND deleted_at IS NULL`,
+			SET deleted_at = NOW()
+			WHERE id = $1
+			AND deleted_at IS NULL`,
 			userID)
 	if err != nil {
 		return fmt.Errorf("delete user: %w", err)
