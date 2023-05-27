@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/boichique/movie-reviews/internal/apperrors"
 	"github.com/boichique/movie-reviews/internal/jwt"
@@ -40,7 +39,11 @@ func (s *Service) Register(ctx context.Context, user *users.User, password strin
 func (s *Service) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.userService.GetExistingUserWithPasswordByEmail(ctx, email)
 	if err != nil {
-		return "", apperrors.Internal(err)
+		if apperrors.Is(err, apperrors.InternalCode) {
+			return "", apperrors.Internal(err)
+		} else {
+			return "", apperrors.BadRequest(err)
+		}
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
@@ -52,7 +55,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, er
 
 	accessToken, err := s.jwtService.GenerateToken(int(user.ID), user.Role)
 	if err != nil {
-		return "", fmt.Errorf("generate token: %w", err)
+		return "", apperrors.Internal(err)
 	}
 
 	return accessToken, nil

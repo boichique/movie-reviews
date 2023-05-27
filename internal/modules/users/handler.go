@@ -24,7 +24,11 @@ func (h Handler) Get(c echo.Context) error {
 
 	user, err := h.service.GetExistingUserByID(c.Request().Context(), req.UserID)
 	if err != nil {
-		return apperrors.BadRequest(err)
+		if apperrors.Is(err, apperrors.InternalCode) {
+			return apperrors.Internal(err)
+		} else {
+			return apperrors.BadRequest(err)
+		}
 	}
 
 	return c.JSON(http.StatusOK, user)

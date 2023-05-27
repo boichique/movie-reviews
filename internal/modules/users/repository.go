@@ -70,7 +70,7 @@ func (r *Repository) GetExistingUserWithPasswordByEmail(ctx context.Context, ema
 
 	switch {
 	case dbx.IsNoRows(err):
-		return nil, apperrors.NotFound("user", "id", int(user.ID))
+		return nil, apperrors.NotFound("user", "email", user.Email)
 	case err != nil:
 		return nil, apperrors.Internal(err)
 	}

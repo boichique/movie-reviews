@@ -38,7 +38,7 @@ func (s *Service) GenerateToken(id int, role string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString([]byte(s.secret))
 	if err != nil {
-		return "", fmt.Errorf("sign token: %w", err)
+		return "", fmt.Errorf("sing token: %w", err)
 	}
 
 	return signed, nil

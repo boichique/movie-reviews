@@ -46,7 +46,8 @@ func main() {
 
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
 
-	_ = CreateAdmin(cfg.Admin, authModule.Service)
+	err = CreateAdmin(cfg.Admin, authModule.Service)
+	failOnError(err, "create admin")
 
 	e.Use(middleware.Recover())
 	api := e.Group("/api")
@@ -120,8 +121,10 @@ func CreateAdmin(cfg config.AdminConfig, authService *auth.Service) error {
 
 	switch {
 	case apperrors.Is(err, apperrors.InternalCode):
-		return fmt.Errorf("register admin using config: %w", err)
-	default:
-		return err
+		return fmt.Errorf("register admin: %w", err)
+	case err != nil:
+		log.Print("admin already exists")
 	}
+
+	return nil
 }
