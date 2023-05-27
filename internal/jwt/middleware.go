@@ -17,13 +17,17 @@ func NewAuthMiddleware(secret string) echo.MiddlewareFunc {
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return &AccessClaims{}
 		},
+		ErrorHandler: func(c echo.Context, err error) error {
+			return nil
+		},
+		ContinueOnIgnoredError: true,
 	})
 }
 
 func GetClaims(c echo.Context) *AccessClaims {
 	token := c.Get(tokenContextKey)
 	if token == nil {
-		panic("attempt to get token before auth middleware")
+		return nil
 	}
 
 	t, ok := token.(*jwt.Token)

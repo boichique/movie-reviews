@@ -2,9 +2,9 @@ package users
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 
+	"github.com/boichique/movie-reviews/internal/apperrors"
+	"github.com/boichique/movie-reviews/internal/dbx"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -20,13 +20,29 @@ func (r *Repository) CreateUser(ctx context.Context, user *UserWithPassword) err
 	err := r.db.
 		QueryRow(
 			ctx,
-			`INSERT INTO users (username, email, pass_hash) 
-			VALUES ($1, $2, $3) 
+			`INSERT INTO users (username, email, pass_hash, role) 
+			VALUES ($1, $2, $3, $4) 
 			RETURNING id, created_at`,
-			user.Username, user.Email, user.PasswordHash).
-		Scan(&user.ID, &user.CreatedAt)
+			user.Username,
+			user.Email,
+			user.PasswordHash,
+			user.Role,
+		).
+		Scan(
+			&user.ID,
+			&user.CreatedAt,
+		)
 
-	return err
+	switch {
+	case dbx.IsUniqueViolation(err, "email"):
+		return apperrors.AlreadyExists("user", "email", user.Email)
+	case dbx.IsUniqueViolation(err, "username"):
+		return apperrors.AlreadyExists("user", "username", user.Username)
+	case err != nil:
+		return apperrors.Internal(err)
+	}
+
+	return nil
 }
 
 func (r *Repository) GetExistingUserWithPasswordByEmail(ctx context.Context, email string) (*UserWithPassword, error) {
@@ -39,13 +55,24 @@ func (r *Repository) GetExistingUserWithPasswordByEmail(ctx context.Context, ema
 			FROM users 
 			WHERE email = $1 
 			AND deleted_at IS NULL`,
-			email).
-		Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt, &user.DeletedAt, &user.Bio)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("user not found: %w", err)
-		}
-		return nil, err
+			email,
+		).
+		Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.PasswordHash,
+			&user.Role,
+			&user.CreatedAt,
+			&user.DeletedAt,
+			&user.Bio,
+		)
+
+	switch {
+	case dbx.IsNoRows(err):
+		return nil, apperrors.NotFound("user", "id", int(user.ID))
+	case err != nil:
+		return nil, apperrors.Internal(err)
 	}
 
 	return user, nil
@@ -61,19 +88,28 @@ func (r *Repository) GetExistingUserByID(ctx context.Context, userID int) (*User
 			FROM users 
 			WHERE id = $1 
 			AND deleted_at IS NULL`,
-			userID).
-		Scan(&user.ID, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.Bio)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("user not found: %w", err)
-		}
-		return nil, err
+			userID,
+		).
+		Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.Role,
+			&user.CreatedAt,
+			&user.Bio,
+		)
+
+	switch {
+	case dbx.IsNoRows(err):
+		return nil, apperrors.NotFound("user", "id", int(user.ID))
+	case err != nil:
+		return nil, apperrors.Internal(err)
 	}
 
 	return &user, nil
 }
 
-func (r *Repository) UpdateUser(ctx context.Context, userID int, bio string) error {
+func (r *Repository) UpdateBio(ctx context.Context, userID int, bio string) error {
 	n, err := r.db.
 		Exec(
 			ctx,
@@ -81,13 +117,37 @@ func (r *Repository) UpdateUser(ctx context.Context, userID int, bio string) err
 			SET bio = $1
 			WHERE id = $2
 			AND deleted_at IS NULL`,
-			bio, userID)
+			bio,
+			userID,
+		)
 	if err != nil {
-		return err
+		return apperrors.Internal(err)
 	}
 
 	if n.RowsAffected() == 0 {
-		return fmt.Errorf("user not found")
+		return apperrors.NotFound("user", "id", userID)
+	}
+
+	return nil
+}
+
+func (r *Repository) UpdateRole(ctx context.Context, userID int, role string) error {
+	n, err := r.db.
+		Exec(
+			ctx,
+			`UPDATE users 
+			SET role = $1
+			WHERE id = $2
+			AND deleted_at IS NULL`,
+			role,
+			userID,
+		)
+	if err != nil {
+		return apperrors.Internal(err)
+	}
+
+	if n.RowsAffected() == 0 {
+		return apperrors.NotFound("user", "id", userID)
 	}
 
 	return nil
@@ -101,13 +161,14 @@ func (r *Repository) DeleteUser(ctx context.Context, userID int) error {
 			SET deleted_at = NOW()
 			WHERE id = $1
 			AND deleted_at IS NULL`,
-			userID)
+			userID,
+		)
 	if err != nil {
-		return fmt.Errorf("delete user: %w", err)
+		return apperrors.Internal(err)
 	}
 
 	if n.RowsAffected() == 0 {
-		return fmt.Errorf("user not found")
+		return apperrors.NotFound("user", "id", userID)
 	}
 
 	return nil
