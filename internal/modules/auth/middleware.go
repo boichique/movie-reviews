@@ -7,7 +7,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var errForbidden = apperrors.Forbidden("not enough permissions")
+var (
+	errForbidden    = apperrors.Forbidden("not enough permissions")
+	errUnauthorized = apperrors.Unauthorized("unauthorized user")
+)
 
 func Self(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -15,7 +18,7 @@ func Self(next echo.HandlerFunc) echo.HandlerFunc {
 
 		claims := jwt.GetClaims(c)
 		if claims == nil {
-			return errForbidden
+			return errUnauthorized
 		}
 
 		if claims.Role == users.AdminRole || claims.Subject == userID {
@@ -30,7 +33,7 @@ func Editor(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		claims := jwt.GetClaims(c)
 		if claims == nil {
-			return errForbidden
+			return errUnauthorized
 		}
 
 		if claims.Role == users.AdminRole || claims.Role == users.EditorRole {
@@ -45,7 +48,7 @@ func Admin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		claims := jwt.GetClaims(c)
 		if claims == nil {
-			return errForbidden
+			return errUnauthorized
 		}
 
 		if claims.Role == users.AdminRole {
