@@ -22,8 +22,12 @@ func (s *Service) GetExistingUserByID(ctx context.Context, userID int) (*User, e
 	return s.repo.GetExistingUserByID(ctx, userID)
 }
 
-func (s *Service) UpdateUser(ctx context.Context, userID int, bio string) error {
-	return s.repo.UpdateUser(ctx, userID, bio)
+func (s *Service) UpdateBio(ctx context.Context, userID int, bio string) error {
+	return s.repo.UpdateBio(ctx, userID, bio)
+}
+
+func (s *Service) UpdateRole(ctx context.Context, userID int, role string) error {
+	return s.repo.UpdateRole(ctx, userID, role)
 }
 
 func (s *Service) DeleteUser(ctx context.Context, userID int) error {

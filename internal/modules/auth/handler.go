@@ -3,9 +3,8 @@ package auth
 import (
 	"net/http"
 
+	"github.com/boichique/movie-reviews/internal/echox"
 	"github.com/boichique/movie-reviews/internal/modules/users"
-	"gopkg.in/validator.v2"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -18,18 +17,15 @@ func NewHandler(authService *Service) *Handler {
 }
 
 func (h *Handler) Register(c echo.Context) error {
-	var req RegisterRequest
-	if err := c.Bind(&req); err != nil {
+	req, err := echox.BindAndValidate[RegisterRequest](c)
+	if err != nil {
 		return err
-	}
-
-	if err := validator.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	user := &users.User{
 		Username: req.Username,
 		Email:    req.Email,
+		Role:     users.UserRole,
 	}
 
 	if err := h.authService.Register(c.Request().Context(), user, req.Password); err != nil {
@@ -40,14 +36,9 @@ func (h *Handler) Register(c echo.Context) error {
 }
 
 func (h *Handler) Login(c echo.Context) error {
-	var req LoginRequest
-
-	if err := c.Bind(&req); err != nil {
+	req, err := echox.BindAndValidate[LoginRequest](c)
+	if err != nil {
 		return err
-	}
-
-	if err := validator.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	accessToken, err := h.authService.Login(c.Request().Context(), req.Email, req.Password)

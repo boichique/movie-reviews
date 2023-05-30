@@ -8,14 +8,21 @@ import (
 )
 
 type Config struct {
-	DBUrl string    `env:"DB_URL"`
-	Port  int       `env:"PORT" envDefault:"8080"`
-	Jwt   JwtConfig `envPrefix:"JWT_"`
+	DBUrl string      `env:"DB_URL"`
+	Port  int         `env:"PORT" envDefault:"8080"`
+	Jwt   JwtConfig   `envPrefix:"JWT_"`
+	Admin AdminConfig `envPrefix:"ADMIN_"`
 }
 
 type JwtConfig struct {
 	Secret           string        `env:"SECRET"`
 	AccessExpiration time.Duration `env:"ACCESS_EXPIRATION" envDefault:"15m"`
+}
+
+type AdminConfig struct {
+	AdminName     string `env:"NAME" validate:"min=5,max=16"`
+	AdminEmail    string `env:"EMAIL" validate:"email"`
+	AdminPassword string `env:"PASSWORD" validate:"password"`
 }
 
 func NewConfig() (*Config, error) {
@@ -25,4 +32,8 @@ func NewConfig() (*Config, error) {
 	}
 
 	return &c, nil
+}
+
+func (ac *AdminConfig) AdminIsSet() bool {
+	return ac.AdminName != "" && ac.AdminEmail != "" && ac.AdminPassword != ""
 }
