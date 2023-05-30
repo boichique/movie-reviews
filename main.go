@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,12 +13,14 @@ import (
 	"github.com/boichique/movie-reviews/internal/config"
 	"github.com/boichique/movie-reviews/internal/echox"
 	"github.com/boichique/movie-reviews/internal/jwt"
+	"github.com/boichique/movie-reviews/internal/log"
 	"github.com/boichique/movie-reviews/internal/modules/auth"
 	"github.com/boichique/movie-reviews/internal/modules/users"
 	"github.com/boichique/movie-reviews/internal/validation"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/exp/slog"
 	"gopkg.in/validator.v2"
 )
 
@@ -36,6 +37,15 @@ func main() {
 	cfg, err := config.NewConfig()
 	failOnError(err, "parse config")
 
+	logger, err := log.SetupLogger(cfg.Local, cfg.LogLevel)
+	failOnError(err, "setup logger")
+
+	slog.SetDefault(logger)
+	slog.Info(
+		"started",
+		"config", cfg,
+	)
+
 	db, err := getDB(context.Background(), cfg.DBUrl)
 	failOnError(err, "connect to database")
 
@@ -46,12 +56,14 @@ func main() {
 
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
 
-	err = CreateAdmin(cfg.Admin, authModule.Service)
+	err = createAdmin(cfg.Admin, authModule.Service)
 	failOnError(err, "create admin")
 
 	e.Use(middleware.Recover())
+
 	api := e.Group("/api")
 	api.Use(authMiddleware)
+	api.Use(echox.Logger)
 
 	// auth group
 	api.POST("/auth/register", authModule.Handler.Register)
@@ -67,20 +79,27 @@ func main() {
 		sigCh := make(chan os.Signal, 1)
 		signal.Notify(sigCh, syscall.SIGINT)
 		<-sigCh
-		log.Println("received interrupt signal. Shutting down...")
+		slog.Info("received interrupt signal. Shutting down...")
 
 		ctx, cancel := context.WithTimeout(context.Background(), gracefulTimeout)
 		defer cancel()
 
 		if err := e.Shutdown(ctx); err != nil {
-			log.Fatalf("shutdown server: %s", err)
+			slog.Error(
+				"shutdown server",
+				"error", err,
+			)
 		}
 	}()
 
 	err = e.Start(fmt.Sprintf(":%d", cfg.Port))
 	if err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
+		slog.Error(
+			"server stopped",
+			"error", err,
+		)
 	}
+	slog.Info("server stopped")
 }
 
 func getDB(ctx context.Context, connString string) (*pgxpool.Pool, error) {
@@ -97,11 +116,12 @@ func getDB(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 
 func failOnError(err error, message string) {
 	if err != nil {
-		log.Fatalf("%s: %s", message, err)
+		slog.Error("%s: %s", message, err)
+		os.Exit(1)
 	}
 }
 
-func CreateAdmin(cfg config.AdminConfig, authService *auth.Service) error {
+func createAdmin(cfg config.AdminConfig, authService *auth.Service) error {
 	if !cfg.AdminIsSet() {
 		return nil
 	}
@@ -123,7 +143,7 @@ func CreateAdmin(cfg config.AdminConfig, authService *auth.Service) error {
 	case apperrors.Is(err, apperrors.InternalCode):
 		return fmt.Errorf("register admin: %w", err)
 	case err != nil:
-		log.Print("admin already exists")
+		slog.Info("admin user already created", "username", cfg.AdminName, "email", cfg.AdminEmail)
 	}
 
 	return nil
