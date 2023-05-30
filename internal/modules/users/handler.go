@@ -3,7 +3,6 @@ package users
 import (
 	"net/http"
 
-	"github.com/boichique/movie-reviews/internal/apperrors"
 	"github.com/boichique/movie-reviews/internal/echox"
 	"github.com/labstack/echo/v4"
 )
@@ -24,11 +23,7 @@ func (h Handler) Get(c echo.Context) error {
 
 	user, err := h.service.GetExistingUserByID(c.Request().Context(), req.UserID)
 	if err != nil {
-		if apperrors.Is(err, apperrors.InternalCode) {
-			return apperrors.Internal(err)
-		} else {
-			return apperrors.BadRequest(err)
-		}
+		return err
 	}
 
 	return c.JSON(http.StatusOK, user)
