@@ -39,11 +39,7 @@ func (s *Service) Register(ctx context.Context, user *users.User, password strin
 func (s *Service) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.userService.GetExistingUserWithPasswordByEmail(ctx, email)
 	if err != nil {
-		if apperrors.Is(err, apperrors.InternalCode) {
-			return "", apperrors.Internal(err)
-		} else {
-			return "", apperrors.BadRequest(err)
-		}
+		return "", err
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
