@@ -42,7 +42,7 @@ func main() {
 
 	slog.SetDefault(logger)
 	slog.Info(
-		"started",
+		"starting",
 		"config", cfg,
 	)
 

@@ -40,7 +40,7 @@ func ErrorHandler(err error, c echo.Context) {
 		)
 	} else {
 		logger.Warn(
-			"server error",
+			"server/client error",
 			"message", err.Error(),
 		)
 	}
