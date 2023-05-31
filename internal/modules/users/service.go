@@ -1,6 +1,10 @@
 package users
 
-import "context"
+import (
+	"context"
+
+	"github.com/boichique/movie-reviews/internal/log"
+)
 
 type Service struct {
 	repo *Repository
@@ -23,13 +27,28 @@ func (s *Service) GetExistingUserByID(ctx context.Context, userID int) (*User, e
 }
 
 func (s *Service) UpdateBio(ctx context.Context, userID int, bio string) error {
-	return s.repo.UpdateBio(ctx, userID, bio)
+	if err := s.repo.UpdateBio(ctx, userID, bio); err != nil {
+		return err
+	}
+
+	log.FromContext(ctx).Info("user bio updated", "userID", userID)
+	return nil
 }
 
 func (s *Service) UpdateRole(ctx context.Context, userID int, role string) error {
-	return s.repo.UpdateRole(ctx, userID, role)
+	if err := s.repo.UpdateRole(ctx, userID, role); err != nil {
+		return err
+	}
+
+	log.FromContext(ctx).Info("user role updated", "userID", userID, "role", role)
+	return nil
 }
 
 func (s *Service) DeleteUser(ctx context.Context, userID int) error {
-	return s.repo.DeleteUser(ctx, userID)
+	if err := s.repo.DeleteUser(ctx, userID); err != nil {
+		return err
+	}
+
+	log.FromContext(ctx).Info("user deleted", "userID", userID)
+	return nil
 }
