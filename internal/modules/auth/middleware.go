@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	errForbidden    = apperrors.Forbidden("not enough permissions")
-	errUnauthorized = apperrors.Unauthorized("unauthorized user")
+	errForbidden    = apperrors.Forbidden("insufficient permissions")
+	errUnauthorized = apperrors.Unauthorized("invalid or missing token")
 )
 
 func Self(next echo.HandlerFunc) echo.HandlerFunc {

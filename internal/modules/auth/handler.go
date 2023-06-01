@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	"github.com/boichique/movie-reviews/contracts"
 	"github.com/boichique/movie-reviews/internal/echox"
 	"github.com/boichique/movie-reviews/internal/modules/users"
 	"github.com/labstack/echo/v4"
@@ -17,7 +18,7 @@ func NewHandler(authService *Service) *Handler {
 }
 
 func (h *Handler) Register(c echo.Context) error {
-	req, err := echox.BindAndValidate[RegisterRequest](c)
+	req, err := echox.BindAndValidate[contracts.RegisterUserRequest](c)
 	if err != nil {
 		return err
 	}
@@ -36,7 +37,7 @@ func (h *Handler) Register(c echo.Context) error {
 }
 
 func (h *Handler) Login(c echo.Context) error {
-	req, err := echox.BindAndValidate[LoginRequest](c)
+	req, err := echox.BindAndValidate[contracts.LoginUserRequest](c)
 	if err != nil {
 		return err
 	}
@@ -47,17 +48,6 @@ func (h *Handler) Login(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, LoginResponse{AccessToken: accessToken})
-}
-
-type RegisterRequest struct {
-	Username string `json:"username" vadidate:"min=5,max=16"`
-	Email    string `json:"email" validate:"email"`
-	Password string `json:"password" validate:"password"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email" validate:"email"`
-	Password string `json:"password" validate:"password"`
 }
 
 type LoginResponse struct {

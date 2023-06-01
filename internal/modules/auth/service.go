@@ -44,7 +44,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, er
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return "", apperrors.Unauthorized("invalid username or password")
+			return "", apperrors.Unauthorized("invalid password")
 		}
 		return "", apperrors.Internal(err)
 	}

@@ -4,15 +4,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/boichique/movie-reviews/contracts"
 	"github.com/boichique/movie-reviews/internal/apperrors"
 	"github.com/boichique/movie-reviews/internal/log"
 	"github.com/labstack/echo/v4"
 )
-
-type HttpError struct {
-	Message    string `json:"message"`
-	IncidentID string `json:"incidentId,omitempty"`
-}
 
 func ErrorHandler(err error, c echo.Context) {
 	if c.Response().Committed {
@@ -24,7 +20,7 @@ func ErrorHandler(err error, c echo.Context) {
 		appError = apperrors.InternalWithoutStackTrace(err)
 	}
 
-	httpError := HttpError{
+	httpError := contracts.HttpError{
 		Message:    appError.SafeError(),
 		IncidentID: appError.IncidentID,
 	}
