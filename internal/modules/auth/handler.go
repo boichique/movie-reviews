@@ -47,9 +47,5 @@ func (h *Handler) Login(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, LoginResponse{AccessToken: accessToken})
-}
-
-type LoginResponse struct {
-	AccessToken string `json:"access_token"`
+	return c.JSON(http.StatusOK, contracts.LoginUserResponse{AccessToken: accessToken})
 }
