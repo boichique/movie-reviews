@@ -70,7 +70,7 @@ func (r *Repository) GetExistingUserWithPasswordByEmail(ctx context.Context, ema
 
 	switch {
 	case dbx.IsNoRows(err):
-		return nil, apperrors.NotFound("user", "email", user.Email)
+		return nil, apperrors.NotFound("user", "email", email)
 	case err != nil:
 		return nil, apperrors.Internal(err)
 	}
@@ -101,7 +101,38 @@ func (r *Repository) GetExistingUserByID(ctx context.Context, userID int) (*User
 
 	switch {
 	case dbx.IsNoRows(err):
-		return nil, apperrors.NotFound("user", "id", int(user.ID))
+		return nil, apperrors.NotFound("user", "id", userID)
+	case err != nil:
+		return nil, apperrors.Internal(err)
+	}
+
+	return &user, nil
+}
+
+func (r *Repository) GetExistingUserByUsername(ctx context.Context, username string) (*User, error) {
+	var user User
+
+	err := r.db.
+		QueryRow(
+			ctx,
+			`SELECT id, username, email, role, created_at, bio 
+			FROM users 
+			WHERE username = $1 
+			AND deleted_at IS NULL`,
+			username,
+		).
+		Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.Role,
+			&user.CreatedAt,
+			&user.Bio,
+		)
+
+	switch {
+	case dbx.IsNoRows(err):
+		return nil, apperrors.NotFound("user", "username", username)
 	case err != nil:
 		return nil, apperrors.Internal(err)
 	}

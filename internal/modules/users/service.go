@@ -26,6 +26,10 @@ func (s *Service) GetExistingUserByID(ctx context.Context, userID int) (*User, e
 	return s.repo.GetExistingUserByID(ctx, userID)
 }
 
+func (s *Service) GetExistingUserByUsername(ctx context.Context, username string) (*User, error) {
+	return s.repo.GetExistingUserByUsername(ctx, username)
+}
+
 func (s *Service) UpdateBio(ctx context.Context, userID int, bio string) error {
 	if err := s.repo.UpdateBio(ctx, userID, bio); err != nil {
 		return err
