@@ -12,7 +12,7 @@ import (
 )
 
 func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
-	t.Run("users.GetUserByUserName: admin", func(t *testing.T) {
+	t.Run("users.GetUserByUsername: admin", func(t *testing.T) {
 		u, err := c.GetUserByUsername(cfg.Admin.AdminName)
 		require.NoError(t, err)
 		admin = u
@@ -22,25 +22,25 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		require.Equal(t, users.AdminRole, u.Role)
 	})
 
-	t.Run("users.GetUserByUserName: not found", func(t *testing.T) {
+	t.Run("users.GetUserByUsername: not found", func(t *testing.T) {
 		_, err := c.GetUserByUsername("notfound")
 		requireNotFoundError(t, err, "user", "username", "notfound")
 	})
 
-	t.Run("users.GetUserById: admin", func(t *testing.T) {
+	t.Run("users.GetUserByID: admin", func(t *testing.T) {
 		u, err := c.GetUserByID(admin.ID)
 		require.NoError(t, err)
 
 		require.Equal(t, admin, u)
 	})
 
-	t.Run("users.GetUserById: not found", func(t *testing.T) {
+	t.Run("users.GetUserByID: not found", func(t *testing.T) {
 		nonExistingId := 1000
 		_, err := c.GetUserByID(nonExistingId)
 		requireNotFoundError(t, err, "user", "id", nonExistingId)
 	})
 
-	t.Run("users.UpdateUser: success", func(t *testing.T) {
+	t.Run("users.UpdateUserBioRequest: success", func(t *testing.T) {
 		bio := "I'm John Doe"
 		req := &contracts.UpdateUserBioRequest{
 			UserID: johnDoe.ID,
@@ -53,7 +53,7 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		require.Equal(t, bio, *johnDoe.Bio)
 	})
 
-	t.Run("users.UpdateUser: non-authenticated", func(t *testing.T) {
+	t.Run("users.UpdateUserBio: non-authenticated", func(t *testing.T) {
 		bio := "I'm John Doe"
 		req := &contracts.UpdateUserBioRequest{
 			UserID: johnDoe.ID,
@@ -63,7 +63,7 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireUnauthorizedError(t, err, "invalid or missing token")
 	})
 
-	t.Run("users.UpdateUser: another user", func(t *testing.T) {
+	t.Run("users.UpdateUserBio: another user", func(t *testing.T) {
 		bio := "I'm John Doe"
 		req := &contracts.UpdateUserBioRequest{
 			UserID: johnDoe.ID + 1,
@@ -73,7 +73,7 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireForbiddenError(t, err, "insufficient permissions")
 	})
 
-	t.Run("users.UpdateUser: by admin", func(t *testing.T) {
+	t.Run("users.UpdateUserBio: by admin", func(t *testing.T) {
 		bio := "Updated by admin"
 		req := &contracts.UpdateUserBioRequest{
 			UserID: johnDoe.ID,
@@ -87,7 +87,7 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		require.Equal(t, bio, *johnDoe.Bio)
 	})
 
-	t.Run("users.SetUserRole: John Doe to editor", func(t *testing.T) {
+	t.Run("users.UpdateUserRole: John Doe to editor", func(t *testing.T) {
 		req := &contracts.UpdateUserRoleRequest{
 			UserID: johnDoe.ID,
 			Role:   users.EditorRole,
@@ -102,7 +102,7 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		johnDoeToken = login(t, c, johnDoe.Email, johnDoePass)
 	})
 
-	t.Run("users.SetUserRole: bad role", func(t *testing.T) {
+	t.Run("users.UpdateUserRole: bad role", func(t *testing.T) {
 		req := &contracts.UpdateUserRoleRequest{
 			UserID: johnDoe.ID,
 			Role:   "superuser",

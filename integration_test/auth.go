@@ -24,7 +24,7 @@ var (
 )
 
 func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
-	t.Run("auth.Register: success", func(t *testing.T) {
+	t.Run("auth.RegisterUser: success", func(t *testing.T) {
 		req := &contracts.RegisterUserRequest{
 			Username: "johndoe",
 			Email:    "johndoe@example.com",
@@ -39,7 +39,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		require.Equal(t, users.UserRole, u.Role)
 	})
 
-	t.Run("auth.Register: short username", func(t *testing.T) {
+	t.Run("auth.RegisterUser: short username", func(t *testing.T) {
 		req := &contracts.RegisterUserRequest{
 			Username: "joh",
 			Email:    "joh@example.com",
@@ -49,7 +49,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireBadRequestError(t, err, "Username")
 	})
 
-	t.Run("auth.Register: existing username", func(t *testing.T) {
+	t.Run("auth.RegisterUser: existing username", func(t *testing.T) {
 		req := &contracts.RegisterUserRequest{
 			Username: johnDoe.Username,
 			Email:    "johndoe_another@example.com",
@@ -59,7 +59,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireAlreadyExistsError(t, err, "user", "username", johnDoe.Username)
 	})
 
-	t.Run("auth.Register: existing email", func(t *testing.T) {
+	t.Run("auth.RegisterUser: existing email", func(t *testing.T) {
 		req := &contracts.RegisterUserRequest{
 			Username: "another_john",
 			Email:    johnDoe.Email,
@@ -69,7 +69,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireAlreadyExistsError(t, err, "user", "email", johnDoe.Email)
 	})
 
-	t.Run("auth.Login: success: John Doe", func(t *testing.T) {
+	t.Run("auth.LoginUser: success: John Doe", func(t *testing.T) {
 		req := &contracts.LoginUserRequest{
 			Email:    johnDoe.Email,
 			Password: johnDoePass,
@@ -80,7 +80,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		johnDoeToken = res.AccessToken
 	})
 
-	t.Run("auth.Login: success: admin", func(t *testing.T) {
+	t.Run("auth.LoginUser: success: admin", func(t *testing.T) {
 		req := &contracts.LoginUserRequest{
 			Email:    cfg.Admin.AdminEmail,
 			Password: cfg.Admin.AdminPassword,
@@ -91,7 +91,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		adminToken = res.AccessToken
 	})
 
-	t.Run("auth.Login: wrong password", func(t *testing.T) {
+	t.Run("auth.LoginUser: wrong password", func(t *testing.T) {
 		req := &contracts.LoginUserRequest{
 			Email:    johnDoe.Email,
 			Password: johnDoePass + "wrong",
@@ -100,7 +100,7 @@ func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireUnauthorizedError(t, err, "invalid password")
 	})
 
-	t.Run("auth.Login: wrong email", func(t *testing.T) {
+	t.Run("auth.LoginUser: wrong email", func(t *testing.T) {
 		req := &contracts.LoginUserRequest{
 			Email:    "nonexisting@mail.com",
 			Password: standardPassword,
