@@ -40,7 +40,7 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 		requireNotFoundError(t, err, "user", "id", nonExistingId)
 	})
 
-	t.Run("users.UpdateUserBioRequest: success", func(t *testing.T) {
+	t.Run("users.UpdateUserBio: success", func(t *testing.T) {
 		bio := "I'm John Doe"
 		req := &contracts.UpdateUserBioRequest{
 			UserID: johnDoe.ID,
