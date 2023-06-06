@@ -22,7 +22,7 @@ func (r *Repository) CreateUser(ctx context.Context, user *UserWithPassword) err
 			ctx,
 			`INSERT INTO users (username, email, pass_hash, role) 
 			VALUES ($1, $2, $3, $4) 
-			RETURNING id, created_at`,
+			RETURNING id, created_at;`,
 			user.Username,
 			user.Email,
 			user.PasswordHash,
@@ -54,7 +54,7 @@ func (r *Repository) GetExistingUserWithPasswordByEmail(ctx context.Context, ema
 			`SELECT id, username, email, pass_hash, role, created_at, deleted_at, bio 
 			FROM users 
 			WHERE email = $1 
-			AND deleted_at IS NULL`,
+			AND deleted_at IS NULL;`,
 			email,
 		).
 		Scan(
@@ -87,7 +87,7 @@ func (r *Repository) GetExistingUserByID(ctx context.Context, userID int) (*User
 			`SELECT id, username, email, role, created_at, bio 
 			FROM users 
 			WHERE id = $1 
-			AND deleted_at IS NULL`,
+			AND deleted_at IS NULL;`,
 			userID,
 		).
 		Scan(
@@ -118,7 +118,7 @@ func (r *Repository) GetExistingUserByUsername(ctx context.Context, username str
 			`SELECT id, username, email, role, created_at, bio 
 			FROM users 
 			WHERE username = $1 
-			AND deleted_at IS NULL`,
+			AND deleted_at IS NULL;`,
 			username,
 		).
 		Scan(
@@ -147,7 +147,7 @@ func (r *Repository) UpdateBio(ctx context.Context, userID int, bio string) erro
 			`UPDATE users 
 			SET bio = $1
 			WHERE id = $2
-			AND deleted_at IS NULL`,
+			AND deleted_at IS NULL;`,
 			bio,
 			userID,
 		)
@@ -169,7 +169,7 @@ func (r *Repository) UpdateRole(ctx context.Context, userID int, role string) er
 			`UPDATE users 
 			SET role = $1
 			WHERE id = $2
-			AND deleted_at IS NULL`,
+			AND deleted_at IS NULL;`,
 			role,
 			userID,
 		)
@@ -191,7 +191,7 @@ func (r *Repository) DeleteUser(ctx context.Context, userID int) error {
 			`UPDATE users 
 			SET deleted_at = NOW()
 			WHERE id = $1
-			AND deleted_at IS NULL`,
+			AND deleted_at IS NULL;`,
 			userID,
 		)
 	if err != nil {

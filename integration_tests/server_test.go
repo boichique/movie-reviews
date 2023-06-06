@@ -70,4 +70,5 @@ func tests(t *testing.T, port int, cfg *config.Config) {
 	// users.GetUsers: success
 	authApiChecks(t, c, cfg)
 	usersApiChecks(t, c, cfg)
+	genresApiChecks(t, c)
 }

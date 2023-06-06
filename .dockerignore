@@ -1,8 +1,10 @@
-.gitignore
 .dockerignore
 .vscode
 
+.git*
+
 tern
+integration_tests
 
 **/Dockerfile
 **/docker-compose.yaml

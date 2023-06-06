@@ -15,7 +15,7 @@ import (
 const standardPassword = "secuR3P@ss"
 
 var (
-	johnDoe      *contracts.User // eventually going to be an editor
+	johnDoe      *contracts.User
 	johnDoePass  = standardPassword
 	johnDoeToken string
 
