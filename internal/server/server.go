@@ -58,8 +58,8 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	jwtService := jwt.NewService(cfg.Jwt.Secret, cfg.Jwt.AccessExpiration)
 	usersModule := users.NewModule(db)
 	authModule := auth.NewModule(usersModule.Service, jwtService)
-	genreModule := genres.NewModule(db)
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
+	genreModule := genres.NewModule(db)
 
 	if err = createAdmin(cfg.Admin, authModule.Service); err != nil {
 		return nil, withClosers(closers, fmt.Errorf("create admin: %w", err))
@@ -85,7 +85,7 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	api.DELETE("/users/:userID", usersModule.Handler.Delete, auth.Self)
 
 	// genres group
-	api.PUT("/genres", genreModule.Handler.Create, auth.Editor)
+	api.POST("/genres", genreModule.Handler.Create, auth.Editor)
 	api.GET("/genres", genreModule.Handler.GetGenres)
 	api.GET("/genres/:genreID", genreModule.Handler.GetByID)
 	api.PUT("/genres/:genreID", genreModule.Handler.Update, auth.Editor)
