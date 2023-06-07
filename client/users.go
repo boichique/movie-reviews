@@ -3,23 +3,23 @@ package client
 import "github.com/boichique/movie-reviews/contracts"
 
 func (c *Client) GetUserByID(userID int) (*contracts.User, error) {
-	var u contracts.User
+	var user contracts.User
 
 	_, err := c.client.R().
-		SetResult(&u).
+		SetResult(&user).
 		Get(c.path("/api/users/%d", userID))
 
-	return &u, err
+	return &user, err
 }
 
 func (c *Client) GetUserByUsername(username string) (*contracts.User, error) {
-	var u contracts.User
+	var user contracts.User
 
 	_, err := c.client.R().
-		SetResult(&u).
+		SetResult(&user).
 		Get(c.path("/api/users/username/%s", username))
 
-	return &u, err
+	return &user, err
 }
 
 func (c *Client) UpdateUserBio(req *contracts.AuthenticatedRequest[*contracts.UpdateUserBioRequest]) error {

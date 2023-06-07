@@ -13,6 +13,7 @@ import (
 	"github.com/boichique/movie-reviews/internal/jwt"
 	"github.com/boichique/movie-reviews/internal/log"
 	"github.com/boichique/movie-reviews/internal/modules/auth"
+	"github.com/boichique/movie-reviews/internal/modules/genres"
 	"github.com/boichique/movie-reviews/internal/modules/users"
 	"github.com/boichique/movie-reviews/internal/validation"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -58,6 +59,7 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	usersModule := users.NewModule(db)
 	authModule := auth.NewModule(usersModule.Service, jwtService)
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
+	genreModule := genres.NewModule(db)
 
 	if err = createAdmin(cfg.Admin, authModule.Service); err != nil {
 		return nil, withClosers(closers, fmt.Errorf("create admin: %w", err))
@@ -81,6 +83,13 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	api.PUT("/users/:userID", usersModule.Handler.UpdateBio, auth.Self)
 	api.PUT("/users/:userID/role/:role", usersModule.Handler.UpdateRole, auth.Admin)
 	api.DELETE("/users/:userID", usersModule.Handler.Delete, auth.Self)
+
+	// genres group
+	api.POST("/genres", genreModule.Handler.Create, auth.Editor)
+	api.GET("/genres", genreModule.Handler.GetGenres)
+	api.GET("/genres/:genreID", genreModule.Handler.GetByID)
+	api.PUT("/genres/:genreID", genreModule.Handler.Update, auth.Editor)
+	api.DELETE("/genres/:genreID", genreModule.Handler.Delete, auth.Editor)
 
 	return &Server{
 		e:       e,

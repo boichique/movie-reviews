@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
+      PGDATA: /var/lib/postgres/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -33,10 +34,10 @@ services:
     build: .
     restart: always
     ports:
-      - "8000:8000"
+      - "8080:8080"
     environment:
       DB_URL: postgres://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
-      PORT: 8000
+      PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
       ADMIN_NAME: ${ADMIN_NAME}

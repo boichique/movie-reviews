@@ -1,8 +1,14 @@
-.gitignore
 .dockerignore
+.env
 .vscode
 
-tern
+.git
+.github
 
+tern
+integration_tests
+client
+
+Makefile
 **/Dockerfile
 **/docker-compose.yaml
