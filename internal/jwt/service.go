@@ -25,10 +25,10 @@ func (s *Service) GenerateToken(id int, role string) (string, error) {
 	now := time.Now()
 
 	claims := &AccessClaims{
-		StandardClaims: jwt.StandardClaims{
-			Id:        uuid.New().String(),
-			IssuedAt:  now.Unix(),
-			ExpiresAt: now.Add(s.accessExpiration).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        uuid.New().String(),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(s.accessExpiration)),
 			Subject:   strconv.Itoa(id),
 		},
 		UserID: id,

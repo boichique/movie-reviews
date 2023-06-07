@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/boichique/movie-reviews/contracts"
@@ -40,10 +39,4 @@ func New(url string) *Client {
 
 func (c *Client) path(f string, args ...any) string {
 	return fmt.Sprintf(c.baseURL+f, args...)
-}
-
-func logRequest(client *resty.Client, request *resty.Request) {
-	log.Printf("Request URL: %s", request.URL)
-	log.Printf("Request Method: %s", request.Method)
-	log.Printf("Request Body: %s", request.Body)
 }

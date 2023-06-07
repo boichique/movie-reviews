@@ -6,9 +6,9 @@ func (c *Client) CreateGenre(req *contracts.AuthenticatedRequest[*contracts.Crea
 	var genre *contracts.Genre
 
 	_, err := c.client.R().
-		SetResult(&genre).
 		SetAuthToken(req.AccessToken).
 		SetBody(req.Request).
+		SetResult(&genre).
 		Post(c.path("/api/genres"))
 
 	return genre, err
@@ -37,7 +37,6 @@ func (c *Client) GetGenres() ([]*contracts.Genre, error) {
 func (c *Client) UpdateGenre(req *contracts.AuthenticatedRequest[*contracts.UpdateGenreRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
-		SetHeader("Content-Type", "application/json").
 		SetBody(req.Request).
 		Put(c.path("/api/genres/%d", req.Request.GenreID))
 
@@ -47,7 +46,6 @@ func (c *Client) UpdateGenre(req *contracts.AuthenticatedRequest[*contracts.Upda
 func (c *Client) DeleteGenre(req *contracts.AuthenticatedRequest[*contracts.GetOrDeleteGenreRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
-		SetHeader("Content-Type", "application/json").
 		SetBody(req.Request).
 		Delete(c.path("/api/genres/%d", req.Request.GenreID))
 

@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ var (
 	adminToken string
 )
 
-func authApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
+func authAPIChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 	t.Run("auth.RegisterUser: success", func(t *testing.T) {
 		req := &contracts.RegisterUserRequest{
 			Username: "johndoe",

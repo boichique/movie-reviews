@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
+func usersAPIChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 	t.Run("users.GetUserByUsername: admin", func(t *testing.T) {
 		u, err := c.GetUserByUsername(cfg.Admin.AdminName)
 		require.NoError(t, err)
@@ -35,9 +35,9 @@ func usersApiChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 	})
 
 	t.Run("users.GetUserByID: not found", func(t *testing.T) {
-		nonExistingId := 1000
-		_, err := c.GetUserByID(nonExistingId)
-		requireNotFoundError(t, err, "user", "id", nonExistingId)
+		nonExistingID := 1000
+		_, err := c.GetUserByID(nonExistingID)
+		requireNotFoundError(t, err, "user", "id", nonExistingID)
 	})
 
 	t.Run("users.UpdateUserBio: success", func(t *testing.T) {

@@ -25,7 +25,6 @@ func (c *Client) GetUserByUsername(username string) (*contracts.User, error) {
 func (c *Client) UpdateUserBio(req *contracts.AuthenticatedRequest[*contracts.UpdateUserBioRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
-		SetHeader("Content-Type", "application/json").
 		SetBody(req.Request).
 		Put(c.path("/api/users/%d", req.Request.UserID))
 
@@ -35,7 +34,6 @@ func (c *Client) UpdateUserBio(req *contracts.AuthenticatedRequest[*contracts.Up
 func (c *Client) UpdateUserRole(req *contracts.AuthenticatedRequest[*contracts.UpdateUserRoleRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
-		SetHeader("Content-Type", "application/json").
 		SetBody(req.Request).
 		Put(c.path("/api/users/%d/role/%s", req.Request.UserID, req.Request.Role))
 
@@ -45,7 +43,6 @@ func (c *Client) UpdateUserRole(req *contracts.AuthenticatedRequest[*contracts.U
 func (c *Client) DeleteUser(req *contracts.AuthenticatedRequest[*contracts.DeleteUserRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
-		SetHeader("Content-Type", "application/json").
 		SetBody(req.Request).
 		Delete(c.path("/api/users/%d", req.Request.UserID))
 

@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"context"
@@ -69,4 +69,8 @@ func runMigrations(t *testing.T, connString string) {
 
 func cleanUp(t *testing.T, cleanUpFunc func(context.Context) error) {
 	require.NoError(t, cleanUpFunc(context.Background()))
+}
+
+func ptr[T any](arg T) *T {
+	return &arg
 }
