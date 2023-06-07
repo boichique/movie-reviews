@@ -12,7 +12,7 @@ type User struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
-type GetUserRequest struct {
+type GetOrDeleteUserRequest struct {
 	UserID int `param:"userid" validate:"nonzero"`
 }
 
@@ -28,8 +28,4 @@ type UpdateUserBioRequest struct {
 type UpdateUserRoleRequest struct {
 	UserID int    `param:"userid" validate:"nonzero"`
 	Role   string `param:"role" validate:"role"`
-}
-
-type DeleteUserRequest struct {
-	UserID int `param:"userid" validate:"nonzero"`
 }

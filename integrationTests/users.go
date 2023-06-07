@@ -113,7 +113,7 @@ func usersAPIChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 
 	randomUser := registerRandomUser(t, c)
 	t.Run("users.DeleteUser: another user", func(t *testing.T) {
-		req := &contracts.DeleteUserRequest{
+		req := &contracts.GetOrDeleteUserRequest{
 			UserID: randomUser.ID,
 		}
 		err := c.DeleteUser(contracts.NewAuthenticated(req, johnDoeToken))
@@ -124,7 +124,7 @@ func usersAPIChecks(t *testing.T, c *client.Client, cfg *config.Config) {
 	})
 
 	t.Run("users.DeleteUser: by admin", func(t *testing.T) {
-		req := &contracts.DeleteUserRequest{
+		req := &contracts.GetOrDeleteUserRequest{
 			UserID: randomUser.ID,
 		}
 		err := c.DeleteUser(contracts.NewAuthenticated(req, adminToken))

@@ -17,7 +17,7 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h Handler) GetByID(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.GetUserRequest](c)
+	req, err := echox.BindAndValidate[contracts.GetOrDeleteUserRequest](c)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (h *Handler) UpdateRole(c echo.Context) error {
 }
 
 func (h *Handler) Delete(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.DeleteUserRequest](c)
+	req, err := echox.BindAndValidate[contracts.GetOrDeleteUserRequest](c)
 	if err != nil {
 		return err
 	}
