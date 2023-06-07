@@ -53,7 +53,7 @@ func (h *Handler) GetByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, genre)
 }
 
-func (h *Handler) Update(c echo.Context) error {
+func (h *Handler) UpdateName(c echo.Context) error {
 	req, err := echox.BindAndValidate[contracts.UpdateGenreRequest](c)
 	if err != nil {
 		return err

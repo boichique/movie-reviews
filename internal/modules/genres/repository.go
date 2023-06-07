@@ -133,6 +133,6 @@ func (r *Repository) Delete(ctx context.Context, genreID int) error {
 	return nil
 }
 
-func errGenreWithNotFound(id int) error {
-	return apperrors.NotFound("genre", "id", id)
+func errGenreWithNotFound(genreID int) error {
+	return apperrors.NotFound("genre", "id", genreID)
 }

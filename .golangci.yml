@@ -1,0 +1,19 @@
+linters:
+  enable:
+    - govet
+    - gofmt
+    - misspell
+    - unconvert
+    - unparam
+    - revive
+    - unused
+    - gocritic
+
+linters-settings:
+  govet:
+    check-shadowing: true
+    check-range-loops: true
+  gofmt:
+    simplify: true
+  misspell:
+    locale: US

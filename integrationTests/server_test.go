@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"context"
@@ -68,7 +68,8 @@ func tests(t *testing.T, port int, cfg *config.Config) {
 	// For example:
 	// auth.Login: wrong password
 	// users.GetUsers: success
-	authApiChecks(t, c, cfg)
-	usersApiChecks(t, c, cfg)
-	genresApiChecks(t, c)
+	authAPIChecks(t, c, cfg)
+	usersAPIChecks(t, c, cfg)
+	genresAPIChecks(t, c)
+	starsAPIChecks(t, c)
 }

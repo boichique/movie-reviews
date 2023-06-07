@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"net/http"
@@ -11,27 +11,27 @@ import (
 
 func requireNotFoundError(t *testing.T, err error, subject, key string, value any) {
 	msg := apperrors.NotFound(subject, key, value).Error()
-	requireApiError(t, err, http.StatusNotFound, msg)
+	requireAPIError(t, err, http.StatusNotFound, msg)
 }
 
 func requireAlreadyExistsError(t *testing.T, err error, subject, key string, value any) {
 	msg := apperrors.AlreadyExists(subject, key, value).Error()
-	requireApiError(t, err, http.StatusConflict, msg)
+	requireAPIError(t, err, http.StatusConflict, msg)
 }
 
 func requireUnauthorizedError(t *testing.T, err error, msg string) {
-	requireApiError(t, err, http.StatusUnauthorized, msg)
+	requireAPIError(t, err, http.StatusUnauthorized, msg)
 }
 
 func requireForbiddenError(t *testing.T, err error, msg string) {
-	requireApiError(t, err, http.StatusForbidden, msg)
+	requireAPIError(t, err, http.StatusForbidden, msg)
 }
 
 func requireBadRequestError(t *testing.T, err error, msg string) {
-	requireApiError(t, err, http.StatusBadRequest, msg)
+	requireAPIError(t, err, http.StatusBadRequest, msg)
 }
 
-func requireApiError(t *testing.T, err error, statusCode int, msg string) {
+func requireAPIError(t *testing.T, err error, statusCode int, msg string) {
 	cerr, ok := err.(*client.Error)
 	require.True(t, ok, "expected client.Error")
 	require.Equal(t, statusCode, cerr.Code)

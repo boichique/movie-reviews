@@ -1,4 +1,4 @@
-package integration_tests
+package integrationTests
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func genresApiChecks(t *testing.T, c *client.Client) {
+func genresAPIChecks(t *testing.T, c *client.Client) {
 	t.Run("genres.GetGenres: empty", func(t *testing.T) {
 		genres, err := c.GetGenres()
 		require.NoError(t, err)
@@ -71,9 +71,9 @@ func genresApiChecks(t *testing.T, c *client.Client) {
 	})
 
 	t.Run("genres.GetGenreByID: not found", func(t *testing.T) {
-		nonExistingId := 1000
-		_, err := c.GetGenreByID(nonExistingId)
-		requireNotFoundError(t, err, "genre", "id", nonExistingId)
+		nonExistingID := 1000
+		_, err := c.GetGenreByID(nonExistingID)
+		requireNotFoundError(t, err, "genre", "id", nonExistingID)
 	})
 
 	t.Run("genres.UpdateGenre: success", func(t *testing.T) {

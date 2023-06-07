@@ -29,9 +29,16 @@ jobs:
           go install mvdan.cc/gofumpt@latest 
           gofumpt -l -w .
           git diff --exit-code
+
+      - name: Golang Lint
+        uses: golangci/golangci-lint-action@v3
+        with: 
+          version: latest
+          skip-pkg-cache: true
+          args: --issues-exit-code=0          
           
       - name: Build project
         run: go build ./...
 
       - name: Run integration tests
-        run: go test -v ./integration_tests/...
+        run: go test -v ./integrationTests/...
