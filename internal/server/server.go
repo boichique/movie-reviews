@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	dbConnectTimeout     = 100000 * time.Second
-	adminCreationTimeout = 50000 * time.Second
+	dbConnectTimeout     = 10 * time.Second
+	adminCreationTimeout = 5 * time.Second
 )
 
 type Server struct {
