@@ -40,7 +40,7 @@ func (c *Client) UpdateUserRole(req *contracts.AuthenticatedRequest[*contracts.U
 	return err
 }
 
-func (c *Client) DeleteUser(req *contracts.AuthenticatedRequest[*contracts.DeleteUserRequest]) error {
+func (c *Client) DeleteUser(req *contracts.AuthenticatedRequest[*contracts.GetOrDeleteUserRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
 		SetBody(req.Request).
