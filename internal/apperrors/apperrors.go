@@ -17,6 +17,7 @@ const (
 	AlreadyExistsCode
 	UnauthorizedCode
 	ForbiddenCode
+	VersionMismatchCode
 )
 
 var _ error = (*Error)(nil)
@@ -94,6 +95,10 @@ func UnauthorizedHidden(err error, message string) *Error {
 
 func Forbidden(message string) *Error {
 	return newError(ForbiddenCode, message)
+}
+
+func VersionMismatch(subject, key string, value any, version int) *Error {
+	return newError(VersionMismatchCode, fmt.Sprintf("wrong version %d for %s %s : %v", version, subject, key, value))
 }
 
 func Is(err error, code Code) bool {

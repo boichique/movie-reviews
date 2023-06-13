@@ -2,8 +2,8 @@ package client
 
 import "github.com/boichique/movie-reviews/contracts"
 
-func (c *Client) CreateStar(req *contracts.AuthenticatedRequest[*contracts.CreateStarRequest]) (*contracts.Star, error) {
-	var star *contracts.Star
+func (c *Client) CreateStar(req *contracts.AuthenticatedRequest[*contracts.CreateStarRequest]) (*contracts.StarDetails, error) {
+	var star *contracts.StarDetails
 
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
@@ -25,8 +25,8 @@ func (c *Client) GetStars(req *contracts.GetStarsPaginatedRequest) (*contracts.P
 	return &stars, err
 }
 
-func (c *Client) GetStarByID(starID int) (*contracts.Star, error) {
-	var star contracts.Star
+func (c *Client) GetStarByID(starID int) (*contracts.StarDetails, error) {
+	var star contracts.StarDetails
 
 	_, err := c.client.R().
 		SetResult(&star).

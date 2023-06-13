@@ -14,6 +14,7 @@ import (
 	"github.com/boichique/movie-reviews/internal/log"
 	"github.com/boichique/movie-reviews/internal/modules/auth"
 	"github.com/boichique/movie-reviews/internal/modules/genres"
+	"github.com/boichique/movie-reviews/internal/modules/movies"
 	"github.com/boichique/movie-reviews/internal/modules/stars"
 	"github.com/boichique/movie-reviews/internal/modules/users"
 	"github.com/boichique/movie-reviews/internal/validation"
@@ -35,7 +36,7 @@ type Server struct {
 	closers []func() error
 }
 
-func New(ctx context.Context, cfg *config.Config) (*Server, error) {
+func New(_ context.Context, cfg *config.Config) (*Server, error) {
 	logger, err := log.SetupLogger(cfg.Local, cfg.LogLevel)
 	if err != nil {
 		return nil, fmt.Errorf("setup logger: %w", err)
@@ -62,6 +63,7 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
 	genreModule := genres.NewModule(db)
 	starModule := stars.NewModule(db, cfg.Pagination)
+	moviesModule := movies.NewModule(db, cfg.Pagination)
 
 	if err = createAdmin(cfg.Admin, authModule.Service); err != nil {
 		return nil, withClosers(closers, fmt.Errorf("create admin: %w", err))
@@ -99,6 +101,13 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	api.GET("/stars/:starID", starModule.Handler.GetByID)
 	api.PUT("/stars/:starID", starModule.Handler.Update, auth.Editor)
 	api.DELETE("/stars/:starID", starModule.Handler.Delete, auth.Editor)
+
+	// movies group
+	api.POST("/movies", moviesModule.Handler.Create, auth.Editor)
+	api.GET("/movies", moviesModule.Handler.GetMoviesPaginated)
+	api.GET("/movies/:movieID", moviesModule.Handler.GetByID)
+	api.PUT("/movies/:movieID", moviesModule.Handler.Update, auth.Editor)
+	api.DELETE("/movies/:movieID", moviesModule.Handler.Delete, auth.Editor)
 
 	return &Server{
 		e:       e,

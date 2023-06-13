@@ -1,4 +1,4 @@
-package integrationTests
+package tests
 
 import (
 	"net/http"
@@ -11,11 +11,11 @@ import (
 )
 
 func starsAPIChecks(t *testing.T, c *client.Client) {
-	var lucas, hamill, mcgregor *contracts.Star
+	var lucas, hamill, mcgregor *contracts.StarDetails
 	t.Run("stars.CreateStar: success", func(t *testing.T) {
 		cases := []struct {
 			req  *contracts.CreateStarRequest
-			addr **contracts.Star
+			addr **contracts.StarDetails
 		}{
 			{
 				req: &contracts.CreateStarRequest{
@@ -49,20 +49,17 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 				addr: &mcgregor,
 			},
 		}
-
 		for _, cc := range cases {
-
 			star, err := c.CreateStar(contracts.NewAuthenticated(cc.req, johnDoeToken))
 			require.NoError(t, err)
-
 			*cc.addr = star
 			require.NotEmpty(t, star.ID)
-			require.NotEmpty(t, star.CreatedAd)
+			require.NotEmpty(t, star.CreatedAt)
 		}
 	})
 
 	t.Run("stars.GetStar: success", func(t *testing.T) {
-		for _, star := range []*contracts.Star{lucas, hamill, mcgregor} {
+		for _, star := range []*contracts.StarDetails{lucas, hamill, mcgregor} {
 			s, err := c.GetStarByID(star.ID)
 			require.NoError(t, err)
 			require.Equal(t, star, s)
@@ -87,9 +84,18 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 		}
 		err := c.UpdateStar(contracts.NewAuthenticated(req, johnDoeToken))
 		require.NoError(t, err)
-
 		lucas = getStar(t, c, lucas.ID)
 		require.Equal(t, req.Bio, lucas.Bio)
+	})
+
+	t.Run("genres.UpdateGenre: not found", func(t *testing.T) {
+		nonExistingID := 1000
+		req := &contracts.UpdateStarRequest{
+			ID:  nonExistingID,
+			Bio: ptr("Horror"),
+		}
+		err := c.UpdateStar(contracts.NewAuthenticated(req, johnDoeToken))
+		requireNotFoundError(t, err, "star", "id", nonExistingID)
 	})
 
 	t.Run("stars.GetStars: success", func(t *testing.T) {
@@ -100,7 +106,7 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 		require.Equal(t, 3, res.Total)
 		require.Equal(t, 1, res.Page)
 		require.Equal(t, testPaginationSize, res.Size)
-		require.Equal(t, []*contracts.Star{lucas, hamill}, res.Items)
+		require.Equal(t, []*contracts.Star{&lucas.Star, &hamill.Star}, res.Items)
 
 		req.Page = res.Page + 1
 		res, err = c.GetStars(req)
@@ -109,7 +115,7 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 		require.Equal(t, 3, res.Total)
 		require.Equal(t, 2, res.Page)
 		require.Equal(t, testPaginationSize, res.Size)
-		require.Equal(t, []*contracts.Star{mcgregor}, res.Items)
+		require.Equal(t, []*contracts.Star{&mcgregor.Star}, res.Items)
 	})
 
 	t.Run("stars.DeleteStar: success", func(t *testing.T) {
@@ -124,7 +130,7 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 	})
 }
 
-func getStar(t *testing.T, c *client.Client, id int) *contracts.Star {
+func getStar(t *testing.T, c *client.Client, id int) *contracts.StarDetails {
 	u, err := c.GetStarByID(id)
 	if err != nil {
 		cerr, ok := err.(*client.Error)
