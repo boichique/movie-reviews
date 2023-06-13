@@ -36,7 +36,7 @@ type Server struct {
 	closers []func() error
 }
 
-func New(_ context.Context, cfg *config.Config) (*Server, error) {
+func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	logger, err := log.SetupLogger(cfg.Local, cfg.LogLevel)
 	if err != nil {
 		return nil, fmt.Errorf("setup logger: %w", err)
@@ -46,7 +46,7 @@ func New(_ context.Context, cfg *config.Config) (*Server, error) {
 	validation.SetupValidators()
 
 	var closers []func() error
-	db, err := getDB(context.Background(), cfg.DBUrl)
+	db, err := getDB(ctx, cfg.DBUrl)
 	if err != nil {
 		return nil, fmt.Errorf("connect to database: %w", err)
 	}
