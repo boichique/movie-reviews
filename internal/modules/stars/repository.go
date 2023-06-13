@@ -2,6 +2,7 @@ package stars
 
 import (
 	"context"
+	"time"
 
 	"github.com/boichique/movie-reviews/internal/apperrors"
 	"github.com/boichique/movie-reviews/internal/dbx"
@@ -17,7 +18,7 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, star *Star) error {
+func (r *Repository) Create(ctx context.Context, star *StarDetails) error {
 	err := r.db.QueryRow(
 		ctx,
 		`INSERT INTO stars (first_name, middle_name, last_name, birth_date, birth_place, death_date, bio)
@@ -41,7 +42,7 @@ func (r *Repository) Create(ctx context.Context, star *Star) error {
 
 func (r *Repository) GetStarsPaginated(ctx context.Context, offset int, limit int) ([]*Star, int, error) {
 	b := &pgx.Batch{}
-	b.Queue("SELECT id, first_name, middle_name, last_name, birth_date, birth_place, death_date, bio, created_at, deleted_at FROM stars WHERE deleted_at IS NULL ORDER BY id LIMIT $1 OFFSET $2", limit, offset)
+	b.Queue("SELECT id, first_name, last_name, birth_date, death_date, created_at, deleted_at FROM stars WHERE deleted_at IS NULL ORDER BY id LIMIT $1 OFFSET $2", limit, offset)
 	b.Queue("SELECT COUNT(*) FROM stars WHERE deleted_at IS NULL")
 	br := r.db.SendBatch(ctx, b)
 	defer br.Close()
@@ -55,16 +56,13 @@ func (r *Repository) GetStarsPaginated(ctx context.Context, offset int, limit in
 	var stars []*Star
 	for rows.Next() {
 		var star Star
-		if err := rows.
+		if err = rows.
 			Scan(
 				&star.ID,
 				&star.FirstName,
-				&star.MiddleName,
 				&star.LastName,
 				&star.BirthDate,
-				&star.BirthPlace,
 				&star.DeathDate,
-				&star.Bio,
 				&star.CreatedAt,
 				&star.DeletedAt,
 			); err != nil {
@@ -86,15 +84,16 @@ func (r *Repository) GetStarsPaginated(ctx context.Context, offset int, limit in
 	return stars, total, err
 }
 
-func (r *Repository) GetByID(ctx context.Context, starID int) (*Star, error) {
-	var star Star
+func (r *Repository) GetByID(ctx context.Context, starID int) (*StarDetails, error) {
+	var star StarDetails
 
 	err := r.db.
 		QueryRow(
 			ctx,
 			`SELECT id, first_name, middle_name, last_name, birth_date, birth_place, death_date, bio, created_at
 			FROM stars
-			WHERE id = $1;`,
+			WHERE id = $1
+			AND deleted_at IS NULL;`,
 			starID,
 		).
 		Scan(
@@ -118,7 +117,7 @@ func (r *Repository) GetByID(ctx context.Context, starID int) (*Star, error) {
 	return &star, nil
 }
 
-func (r *Repository) Update(ctx context.Context, star *Star) error {
+func (r *Repository) Update(ctx context.Context, star *StarDetails) error {
 	n, err := r.db.
 		Exec(
 			ctx,
@@ -155,9 +154,11 @@ func (r *Repository) Delete(ctx context.Context, starID int) error {
 	n, err := r.db.
 		Exec(
 			ctx,
-			`DELETE FROM stars
-			WHERE id = $1`,
-			starID,
+			`UPDATE stars
+			SET deleted_at = $1
+			WHERE id = $2
+			AND deleted_at IS NULL`,
+			time.Now(), starID,
 		)
 	if err != nil {
 		return apperrors.Internal(err)

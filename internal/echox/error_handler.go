@@ -20,7 +20,7 @@ func ErrorHandler(err error, c echo.Context) {
 		appError = apperrors.InternalWithoutStackTrace(err)
 	}
 
-	httpError := contracts.HttpError{
+	httpError := contracts.HTTPError{
 		Message:    appError.SafeError(),
 		IncidentID: appError.IncidentID,
 	}
@@ -57,7 +57,7 @@ func toHTTPStatus(code apperrors.Code) int {
 		return http.StatusBadRequest
 	case apperrors.NotFoundCode:
 		return http.StatusNotFound
-	case apperrors.AlreadyExistsCode:
+	case apperrors.AlreadyExistsCode, apperrors.VersionMismatchCode:
 		return http.StatusConflict
 	case apperrors.UnauthorizedCode:
 		return http.StatusUnauthorized

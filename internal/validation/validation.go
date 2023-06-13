@@ -57,7 +57,7 @@ func password(v interface{}, _ string) error {
 	return nil
 }
 
-func email(v interface{}, param string) error {
+func email(v interface{}, _ string) error {
 	s, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("email only validates string")
@@ -70,7 +70,7 @@ func email(v interface{}, param string) error {
 	return err
 }
 
-func role(v interface{}, param string) error {
+func role(v interface{}, _ string) error {
 	s, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("role only validates string")
