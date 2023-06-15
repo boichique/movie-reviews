@@ -63,7 +63,7 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
 	genreModule := genres.NewModule(db)
 	starModule := stars.NewModule(db, cfg.Pagination)
-	moviesModule := movies.NewModule(db, cfg.Pagination)
+	moviesModule := movies.NewModule(db, genreModule, cfg.Pagination)
 
 	if err = createAdmin(cfg.Admin, authModule.Service); err != nil {
 		return nil, withClosers(closers, fmt.Errorf("create admin: %w", err))

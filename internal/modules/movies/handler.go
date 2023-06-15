@@ -6,6 +6,7 @@ import (
 	"github.com/boichique/movie-reviews/contracts"
 	"github.com/boichique/movie-reviews/internal/config"
 	"github.com/boichique/movie-reviews/internal/echox"
+	"github.com/boichique/movie-reviews/internal/modules/genres"
 	"github.com/boichique/movie-reviews/internal/pagination"
 	"github.com/labstack/echo/v4"
 )
@@ -34,6 +35,10 @@ func (h *Handler) Create(c echo.Context) error {
 		},
 		Description: req.Description,
 	}
+	for _, genreID := range req.GenresID {
+		movie.Genres = append(movie.Genres, &genres.Genre{ID: genreID})
+	}
+
 	err = h.service.Create(c.Request().Context(), movie)
 	if err != nil {
 		return err
@@ -62,6 +67,7 @@ func (h *Handler) GetByID(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	movie, err := h.service.GetByID(c.Request().Context(), req.ID)
 	if err != nil {
 		return err
@@ -82,6 +88,9 @@ func (h *Handler) Update(c echo.Context) error {
 		},
 		Description: req.Description,
 	}
+	for _, genreID := range req.GenresID {
+		movie.Genres = append(movie.Genres, &genres.Genre{ID: genreID})
+	}
 
 	if err = h.service.Update(c.Request().Context(), movie); err != nil {
 		return err
@@ -94,6 +103,7 @@ func (h *Handler) Delete(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	if err = h.service.Delete(c.Request().Context(), req.ID); err != nil {
 		return err
 	}

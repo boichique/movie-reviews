@@ -69,6 +69,15 @@ func InternalWithoutStackTrace(err error) *Error {
 	return appErr
 }
 
+func EnsureInternal(err error) error {
+	var appErr *Error
+	if !errors.As(err, &appErr) {
+		return Internal(err)
+	}
+
+	return err
+}
+
 func BadRequest(err error) *Error {
 	return newWrappedError(err, BadRequestCode)
 }
