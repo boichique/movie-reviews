@@ -1,6 +1,10 @@
 package movies
 
-import "time"
+import (
+	"time"
+
+	"github.com/boichique/movie-reviews/internal/modules/genres"
+)
 
 type Movie struct {
 	ID          int        `json:"id"`
@@ -12,6 +16,7 @@ type Movie struct {
 
 type MovieDetails struct {
 	Movie
-	Description string `json:"description"`
-	Version     int    `json:"version"`
+	Description string          `json:"description"`
+	Version     int             `json:"version"`
+	Genres      []*genres.Genre `json:"genres"`
 }

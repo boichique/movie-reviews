@@ -4,14 +4,19 @@ import (
 	"context"
 
 	"github.com/boichique/movie-reviews/internal/log"
+	"github.com/boichique/movie-reviews/internal/modules/genres"
 )
 
 type Service struct {
-	repo *Repository
+	repo          *Repository
+	genresService *genres.Service
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo *Repository, genresService *genres.Service) *Service {
+	return &Service{
+		repo:          repo,
+		genresService: genresService,
+	}
 }
 
 func (s *Service) Create(ctx context.Context, movie *MovieDetails) error {
@@ -23,7 +28,8 @@ func (s *Service) Create(ctx context.Context, movie *MovieDetails) error {
 		"movie created",
 		"movieID", movie.ID,
 		"movieTitle", movie.Title)
-	return nil
+
+	return s.assemble(ctx, movie)
 }
 
 func (s *Service) GetMoviesPaginated(ctx context.Context, offset int, limit int) ([]*Movie, int, error) {
@@ -31,7 +37,13 @@ func (s *Service) GetMoviesPaginated(ctx context.Context, offset int, limit int)
 }
 
 func (s *Service) GetByID(ctx context.Context, movieID int) (movie *MovieDetails, err error) {
-	return s.repo.GetByID(ctx, movieID)
+	m, err := s.repo.GetByID(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.assemble(ctx, m)
+	return m, err
 }
 
 func (s *Service) Update(ctx context.Context, movie *MovieDetails) error {
@@ -52,4 +64,11 @@ func (s *Service) Delete(ctx context.Context, movieID int) error {
 	log.FromContext(ctx).Info("movie deleted",
 		"movieID", movieID)
 	return nil
+}
+
+func (s *Service) assemble(ctx context.Context, movie *MovieDetails) error {
+	var err error
+	movie.Genres, err = s.genresService.GetByMovieID(ctx, movie.ID)
+
+	return err
 }

@@ -37,6 +37,10 @@ func (s *Service) GetByID(ctx context.Context, genreID int) (*Genre, error) {
 	return s.repo.GetByID(ctx, genreID)
 }
 
+func (s *Service) GetByMovieID(ctx context.Context, movieID int) ([]*Genre, error) {
+	return s.repo.GetByMovieID(ctx, movieID)
+}
+
 func (s *Service) Update(ctx context.Context, genreID int, name string) error {
 	if err := s.repo.Update(ctx, genreID, name); err != nil {
 		return err

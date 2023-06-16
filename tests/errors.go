@@ -31,6 +31,11 @@ func requireBadRequestError(t *testing.T, err error, msg string) {
 	requireAPIError(t, err, http.StatusBadRequest, msg)
 }
 
+func requireVersionMesmatchError(t *testing.T, err error, subject, key string, value any, version int) {
+	msg := apperrors.VersionMismatch(subject, key, value, version).Error()
+	requireAPIError(t, err, http.StatusConflict, msg)
+}
+
 func requireAPIError(t *testing.T, err error, statusCode int, msg string) {
 	cerr, ok := err.(*client.Error)
 	require.True(t, ok, "expected client.Error")

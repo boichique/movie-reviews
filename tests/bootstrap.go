@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	postgresContainerName = "movie-reviews-tests-postgres"
+	postgresContainerName = "movie-reviews-it-tests-postgres"
 	postgresUser          = "user"
 	postgresPassword      = "pass"
 	postgresDb            = "moviereviewsdb"
