@@ -28,7 +28,8 @@ func (s *Service) Create(ctx context.Context, movie *MovieDetails) error {
 		"movie created",
 		"movieID", movie.ID,
 		"movieTitle", movie.Title)
-	return nil
+
+	return s.assemble(ctx, movie)
 }
 
 func (s *Service) GetMoviesPaginated(ctx context.Context, offset int, limit int) ([]*Movie, int, error) {

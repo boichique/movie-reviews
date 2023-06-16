@@ -64,13 +64,13 @@ func moviesAPIChecks(t *testing.T, c *client.Client) {
 		}
 	})
 
-	// t.Run("movies.GetMovie: success", func(t *testing.T) {
-	// 	for _, movie := range []*contracts.MovieDetails{starWars, harryPotter, lordOfTheRing} {
-	// 		s, err := c.GetMovie(movie.ID)
-	// 		require.NoError(t, err)
-	// 		require.Equal(t, movie, s)
-	// 	}
-	// })
+	t.Run("movies.GetMovie: success", func(t *testing.T) {
+		for _, movie := range []*contracts.MovieDetails{starWars, harryPotter, lordOfTheRing} {
+			s, err := c.GetMovie(movie.ID)
+			require.NoError(t, err)
+			require.Equal(t, movie, s)
+		}
+	})
 
 	t.Run("movies.GetMovie: not found", func(t *testing.T) {
 		nonExistingID := 1000
