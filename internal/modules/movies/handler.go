@@ -7,6 +7,7 @@ import (
 	"github.com/boichique/movie-reviews/internal/config"
 	"github.com/boichique/movie-reviews/internal/echox"
 	"github.com/boichique/movie-reviews/internal/modules/genres"
+	"github.com/boichique/movie-reviews/internal/modules/stars"
 	"github.com/boichique/movie-reviews/internal/pagination"
 	"github.com/labstack/echo/v4"
 )
@@ -39,6 +40,18 @@ func (h *Handler) Create(c echo.Context) error {
 		movie.Genres = append(movie.Genres, &genres.Genre{ID: genreID})
 	}
 
+	for _, creditID := range req.Cast {
+		movie.Cast = append(
+			movie.Cast, &stars.MovieCredit{
+				Star: stars.Star{
+					ID: creditID.StarID,
+				},
+				Role:    creditID.Role,
+				Details: creditID.Details,
+			},
+		)
+	}
+
 	err = h.service.Create(c.Request().Context(), movie)
 	if err != nil {
 		return err
@@ -48,14 +61,14 @@ func (h *Handler) Create(c echo.Context) error {
 }
 
 func (h *Handler) GetMoviesPaginated(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.GetMoviesRequest](c)
+	req, err := echox.BindAndValidate[contracts.GetMoviesPaginatedRequest](c)
 	if err != nil {
 		return err
 	}
 	pagination.SetDefaults(&req.PaginatedRequest, h.paginationConfig)
 	offset, limit := pagination.OffsetLimit(&req.PaginatedRequest)
 
-	movies, total, err := h.service.GetMoviesPaginated(c.Request().Context(), offset, limit)
+	movies, total, err := h.service.GetMoviesPaginated(c.Request().Context(), req.StarID, offset, limit)
 	if err != nil {
 		return err
 	}
@@ -68,7 +81,7 @@ func (h *Handler) GetByID(c echo.Context) error {
 		return err
 	}
 
-	movie, err := h.service.GetByID(c.Request().Context(), req.ID)
+	movie, err := h.service.GetByID(c.Request().Context(), req.MovieID)
 	if err != nil {
 		return err
 	}
@@ -82,7 +95,7 @@ func (h *Handler) Update(c echo.Context) error {
 	}
 	movie := &MovieDetails{
 		Movie: Movie{
-			ID:          req.ID,
+			ID:          req.MovieID,
 			Title:       req.Title,
 			ReleaseDate: req.ReleaseDate,
 		},
@@ -90,6 +103,18 @@ func (h *Handler) Update(c echo.Context) error {
 	}
 	for _, genreID := range req.GenresID {
 		movie.Genres = append(movie.Genres, &genres.Genre{ID: genreID})
+	}
+
+	for _, creditID := range req.Cast {
+		movie.Cast = append(
+			movie.Cast, &stars.MovieCredit{
+				Star: stars.Star{
+					ID: creditID.StarID,
+				},
+				Role:    creditID.Role,
+				Details: creditID.Details,
+			},
+		)
 	}
 
 	if err = h.service.Update(c.Request().Context(), movie); err != nil {
@@ -104,7 +129,7 @@ func (h *Handler) Delete(c echo.Context) error {
 		return err
 	}
 
-	if err = h.service.Delete(c.Request().Context(), req.ID); err != nil {
+	if err = h.service.Delete(c.Request().Context(), req.MovieID); err != nil {
 		return err
 	}
 	return c.NoContent(http.StatusOK)

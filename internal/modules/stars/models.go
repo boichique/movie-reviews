@@ -18,3 +18,30 @@ type StarDetails struct {
 	BirthPlace *string `json:"birth_place,omitempty"`
 	Bio        *string `json:"bio,omitempty"`
 }
+
+type MovieCredit struct {
+	Star    Star    `json:"star"`
+	Role    string  `json:"role"`
+	Details *string `json:"details,omitempty"`
+}
+
+type MovieStarRelation struct {
+	MovieID int
+	StarID  int
+	Role    string
+	Details *string
+	OrderNo int
+}
+
+func (m MovieStarRelation) Key() any {
+	type MovieStarRelationKey struct {
+		MovieID, StarID int
+		Role            string
+	}
+
+	return MovieStarRelationKey{
+		MovieID: m.MovieID,
+		StarID:  m.StarID,
+		Role:    m.Role,
+	}
+}
