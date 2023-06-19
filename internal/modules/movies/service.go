@@ -35,8 +35,8 @@ func (s *Service) Create(ctx context.Context, movie *MovieDetails) error {
 	return s.assemble(ctx, movie)
 }
 
-func (s *Service) GetMoviesPaginated(ctx context.Context, starID *int, offset int, limit int) ([]*Movie, int, error) {
-	return s.repo.GetMoviesPaginated(ctx, starID, offset, limit)
+func (s *Service) GetMoviesPaginated(ctx context.Context, searchTerm *string, starID *int, offset int, limit int) ([]*Movie, int, error) {
+	return s.repo.GetMoviesPaginated(ctx, searchTerm, starID, offset, limit)
 }
 
 func (s *Service) GetByID(ctx context.Context, movieID int) (movie *MovieDetails, err error) {
