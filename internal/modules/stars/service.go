@@ -28,12 +28,16 @@ func (s *Service) Create(ctx context.Context, star *StarDetails) error {
 	return nil
 }
 
-func (s *Service) GetStarsPaginated(ctx context.Context, offset int, limit int) ([]*Star, int, error) {
-	return s.repo.GetStarsPaginated(ctx, offset, limit)
+func (s *Service) GetStarsPaginated(ctx context.Context, movieID *int, offset int, limit int) ([]*Star, int, error) {
+	return s.repo.GetStarsPaginated(ctx, movieID, offset, limit)
 }
 
 func (s *Service) GetByID(ctx context.Context, starID int) (*StarDetails, error) {
 	return s.repo.GetByID(ctx, starID)
+}
+
+func (s *Service) GetByMovieID(ctx context.Context, movieID int) ([]*MovieCredit, error) {
+	return s.repo.GetByMovieID(ctx, movieID)
 }
 
 func (s *Service) Update(ctx context.Context, star *StarDetails) error {

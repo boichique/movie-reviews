@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -8,10 +9,17 @@ import (
 	"github.com/boichique/movie-reviews/client"
 	"github.com/boichique/movie-reviews/contracts"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/rand"
+)
+
+var (
+	MarkHamill     *contracts.StarDetails
+	EvanMcGregor   *contracts.StarDetails
+	GeorgeLucas    *contracts.StarDetails
+	WilliamShatner *contracts.StarDetails
 )
 
 func starsAPIChecks(t *testing.T, c *client.Client) {
-	var lucas, hamill, mcgregor *contracts.StarDetails
 	t.Run("stars.CreateStar: success", func(t *testing.T) {
 		cases := []struct {
 			req  *contracts.CreateStarRequest
@@ -23,10 +31,10 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 					MiddleName: ptr("Walton"),
 					LastName:   "Lucas",
 					BirthDate:  time.Date(1944, time.May, 14, 0, 0, 0, 0, time.UTC),
-					BirthPlace: ptr("Modesto, California6 U.S."),
+					BirthPlace: ptr("Modesto, California, U.S."),
 					Bio:        ptr("Famous creator of Star Wars"),
 				},
-				addr: &lucas,
+				addr: &GeorgeLucas,
 			},
 			{
 				req: &contracts.CreateStarRequest{
@@ -34,9 +42,9 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 					MiddleName: ptr("Richard"),
 					LastName:   "Hamill",
 					BirthDate:  time.Date(1951, time.September, 25, 0, 0, 0, 0, time.UTC),
-					BirthPlace: ptr("Oakland, California6 U.S."),
+					BirthPlace: ptr("Oakland, California, U.S."),
 				},
-				addr: &hamill,
+				addr: &MarkHamill,
 			},
 			{
 				req: &contracts.CreateStarRequest{
@@ -46,12 +54,24 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 					BirthDate:  time.Date(1971, time.March, 31, 0, 0, 0, 0, time.UTC),
 					BirthPlace: ptr("Perth, Scotland"),
 				},
-				addr: &mcgregor,
+				addr: &EvanMcGregor,
+			},
+			{
+				req: &contracts.CreateStarRequest{
+					FirstName:  "William",
+					MiddleName: ptr("Alan"),
+					LastName:   "Shatner",
+					BirthDate:  time.Date(1931, time.March, 22, 0, 0, 0, 0, time.UTC),
+					BirthPlace: ptr("Montreal, Quebec, Canada"),
+				},
+				addr: &WilliamShatner,
 			},
 		}
+
 		for _, cc := range cases {
 			star, err := c.CreateStar(contracts.NewAuthenticated(cc.req, johnDoeToken))
 			require.NoError(t, err)
+
 			*cc.addr = star
 			require.NotEmpty(t, star.ID)
 			require.NotEmpty(t, star.CreatedAt)
@@ -59,9 +79,10 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 	})
 
 	t.Run("stars.GetStar: success", func(t *testing.T) {
-		for _, star := range []*contracts.StarDetails{lucas, hamill, mcgregor} {
+		for _, star := range []*contracts.StarDetails{GeorgeLucas, MarkHamill, EvanMcGregor, WilliamShatner} {
 			s, err := c.GetStarByID(star.ID)
 			require.NoError(t, err)
+
 			require.Equal(t, star, s)
 		}
 	})
@@ -72,61 +93,52 @@ func starsAPIChecks(t *testing.T, c *client.Client) {
 		requireNotFoundError(t, err, "star", "id", nonExistingID)
 	})
 
-	t.Run("stars.UpdateStar: success", func(t *testing.T) {
-		req := &contracts.UpdateStarRequest{
-			ID:         lucas.ID,
-			FirstName:  "George",
-			MiddleName: ptr("Walton"),
-			LastName:   "Lucas",
-			BirthDate:  time.Date(1944, time.May, 14, 0, 0, 0, 0, time.UTC),
-			BirthPlace: ptr("Modesto, California U.S."),
-			Bio:        ptr("Famous creator of Star Wars and other films"),
-		}
-		err := c.UpdateStar(contracts.NewAuthenticated(req, johnDoeToken))
-		require.NoError(t, err)
-		lucas = getStar(t, c, lucas.ID)
-		require.Equal(t, req.Bio, lucas.Bio)
-	})
-
-	t.Run("genres.UpdateGenre: not found", func(t *testing.T) {
-		nonExistingID := 1000
-		req := &contracts.UpdateStarRequest{
-			ID:  nonExistingID,
-			Bio: ptr("Horror"),
-		}
-		err := c.UpdateStar(contracts.NewAuthenticated(req, johnDoeToken))
-		requireNotFoundError(t, err, "star", "id", nonExistingID)
-	})
-
 	t.Run("stars.GetStars: success", func(t *testing.T) {
 		req := &contracts.GetStarsPaginatedRequest{}
 		res, err := c.GetStars(req)
 		require.NoError(t, err)
 
-		require.Equal(t, 3, res.Total)
+		require.Equal(t, 4, res.Total)
 		require.Equal(t, 1, res.Page)
 		require.Equal(t, testPaginationSize, res.Size)
-		require.Equal(t, []*contracts.Star{&lucas.Star, &hamill.Star}, res.Items)
+		require.Equal(t, []*contracts.Star{&GeorgeLucas.Star, &MarkHamill.Star}, res.Items)
 
 		req.Page = res.Page + 1
 		res, err = c.GetStars(req)
 		require.NoError(t, err)
 
-		require.Equal(t, 3, res.Total)
+		require.Equal(t, 4, res.Total)
 		require.Equal(t, 2, res.Page)
 		require.Equal(t, testPaginationSize, res.Size)
-		require.Equal(t, []*contracts.Star{&mcgregor.Star}, res.Items)
+		require.Equal(t, []*contracts.Star{&EvanMcGregor.Star, &WilliamShatner.Star}, res.Items)
+	})
+
+	t.Run("stars.UpdateStar: success", func(t *testing.T) {
+		req := &contracts.UpdateStarRequest{
+			StarID:     EvanMcGregor.ID,
+			FirstName:  EvanMcGregor.FirstName,
+			MiddleName: EvanMcGregor.MiddleName,
+			LastName:   EvanMcGregor.LastName,
+			BirthDate:  EvanMcGregor.BirthDate,
+			BirthPlace: EvanMcGregor.BirthPlace,
+			DeathDate:  EvanMcGregor.DeathDate,
+			Bio:        ptr(`Acclaimed Scottish actor known for "Trainspotting," "Moulin Rouge!," and Obi-Wan Kenobi in "Star Wars."`),
+		}
+
+		err := c.UpdateStar(contracts.NewAuthenticated(req, johnDoeToken))
+		require.NoError(t, err)
+
+		EvanMcGregor = getStar(t, c, EvanMcGregor.ID)
+		require.Equal(t, req.Bio, EvanMcGregor.Bio)
 	})
 
 	t.Run("stars.DeleteStar: success", func(t *testing.T) {
-		req := &contracts.GetOrDeleteStarRequest{
-			ID: lucas.ID,
-		}
-		err := c.DeleteStar(contracts.NewAuthenticated(req, johnDoeToken))
+		star := createRandomStar(t, c, johnDoeToken)
+		err := c.DeleteStar(contracts.NewAuthenticated(&contracts.DeleteStarRequest{StarID: star.ID}, johnDoeToken))
 		require.NoError(t, err)
 
-		lucas = getStar(t, c, lucas.ID)
-		require.Nil(t, lucas)
+		star = getStar(t, c, star.ID)
+		require.Nil(t, star)
 	})
 }
 
@@ -140,4 +152,19 @@ func getStar(t *testing.T, c *client.Client, id int) *contracts.StarDetails {
 	}
 
 	return u
+}
+
+func createRandomStar(t *testing.T, c *client.Client, token string) *contracts.StarDetails {
+	r := rand.Intn(10000)
+
+	star, err := c.CreateStar(contracts.NewAuthenticated(&contracts.CreateStarRequest{
+		FirstName:  fmt.Sprintf("First Name %d", r),
+		MiddleName: ptr(fmt.Sprintf("Middle Name %d", r)),
+		LastName:   fmt.Sprintf("Last Name %d", r),
+		BirthDate:  time.Date(1971, time.March, 31, 0, 0, 0, 0, time.UTC),
+		BirthPlace: ptr(fmt.Sprintf("Birth Place %d", r)),
+	}, token))
+	require.NoError(t, err)
+
+	return star
 }

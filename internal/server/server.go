@@ -62,8 +62,8 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	authModule := auth.NewModule(usersModule.Service, jwtService)
 	authMiddleware := jwt.NewAuthMiddleware(cfg.Jwt.Secret)
 	genreModule := genres.NewModule(db)
-	starModule := stars.NewModule(db, cfg.Pagination)
-	moviesModule := movies.NewModule(db, genreModule, cfg.Pagination)
+	starsModule := stars.NewModule(db, cfg.Pagination)
+	moviesModule := movies.NewModule(db, genreModule, starsModule, cfg.Pagination)
 
 	if err = createAdmin(cfg.Admin, authModule.Service); err != nil {
 		return nil, withClosers(closers, fmt.Errorf("create admin: %w", err))
@@ -96,11 +96,11 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	api.DELETE("/genres/:genreID", genreModule.Handler.Delete, auth.Editor)
 
 	// stars group
-	api.POST("/stars", starModule.Handler.Create, auth.Editor)
-	api.GET("/stars", starModule.Handler.GetStarsPaginated)
-	api.GET("/stars/:starID", starModule.Handler.GetByID)
-	api.PUT("/stars/:starID", starModule.Handler.Update, auth.Editor)
-	api.DELETE("/stars/:starID", starModule.Handler.Delete, auth.Editor)
+	api.POST("/stars", starsModule.Handler.Create, auth.Editor)
+	api.GET("/stars", starsModule.Handler.GetStarsPaginated)
+	api.GET("/stars/:starID", starsModule.Handler.GetByID)
+	api.PUT("/stars/:starID", starsModule.Handler.Update, auth.Editor)
+	api.DELETE("/stars/:starID", starsModule.Handler.Delete, auth.Editor)
 
 	// movies group
 	api.POST("/movies", moviesModule.Handler.Create, auth.Editor)

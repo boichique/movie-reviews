@@ -19,7 +19,7 @@ func (c *Client) GetStars(req *contracts.GetStarsPaginatedRequest) (*contracts.P
 
 	_, err := c.client.R().
 		SetResult(&stars).
-		SetQueryParams(req.PaginatedRequest.ToQueryParams()).
+		SetQueryParams(req.ToQueryParams()).
 		Get(c.path("/api/stars"))
 
 	return &stars, err
@@ -39,16 +39,16 @@ func (c *Client) UpdateStar(req *contracts.AuthenticatedRequest[*contracts.Updat
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
 		SetBody(req.Request).
-		Put(c.path("/api/stars/%d", req.Request.ID))
+		Put(c.path("/api/stars/%d", req.Request.StarID))
 
 	return err
 }
 
-func (c *Client) DeleteStar(req *contracts.AuthenticatedRequest[*contracts.GetOrDeleteStarRequest]) error {
+func (c *Client) DeleteStar(req *contracts.AuthenticatedRequest[*contracts.DeleteStarRequest]) error {
 	_, err := c.client.R().
 		SetAuthToken(req.AccessToken).
 		SetBody(req.Request).
-		Delete(c.path("/api/stars/%d", req.Request.ID))
+		Delete(c.path("/api/stars/%d", req.Request.StarID))
 
 	return err
 }

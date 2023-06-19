@@ -1,6 +1,9 @@
 package contracts
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 type Star struct {
 	ID        int        `json:"id"`
@@ -31,14 +34,15 @@ type CreateStarRequest struct {
 
 type GetStarsPaginatedRequest struct {
 	PaginatedRequest
+	MovieID *int `query:"movieID"`
 }
 
-type GetOrDeleteStarRequest struct {
-	ID int `param:"starID" validate:"nonzero"`
+type GetStarRequest struct {
+	StarID int `param:"starID" validate:"nonzero"`
 }
 
 type UpdateStarRequest struct {
-	ID         int        `json:"id"`
+	StarID     int        `json:"star_id"`
 	FirstName  string     `json:"first_name"`
 	MiddleName *string    `json:"middle_name,omitempty"`
 	LastName   string     `json:"last_name"`
@@ -46,4 +50,17 @@ type UpdateStarRequest struct {
 	BirthPlace *string    `json:"birth_place,omitempty"`
 	DeathDate  *time.Time `json:"death_date,omitempty"`
 	Bio        *string    `json:"bio,omitempty"`
+}
+
+type DeleteStarRequest struct {
+	StarID int `param:"starID" validate:"nonzero"`
+}
+
+func (r *GetStarsPaginatedRequest) ToQueryParams() map[string]string {
+	param := r.PaginatedRequest.ToQueryParams()
+	if r.MovieID != nil {
+		param["movieID"] = strconv.Itoa(*r.MovieID)
+	}
+
+	return param
 }

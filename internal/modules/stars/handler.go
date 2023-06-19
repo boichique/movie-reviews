@@ -57,7 +57,7 @@ func (h *Handler) GetStarsPaginated(c echo.Context) error {
 	pagination.SetDefaults(&req.PaginatedRequest, h.paginationConfig)
 	offset, limit := pagination.OffsetLimit(&req.PaginatedRequest)
 
-	stars, total, err := h.service.GetStarsPaginated(c.Request().Context(), offset, limit)
+	stars, total, err := h.service.GetStarsPaginated(c.Request().Context(), req.MovieID, offset, limit)
 	if err != nil {
 		return err
 	}
@@ -66,12 +66,12 @@ func (h *Handler) GetStarsPaginated(c echo.Context) error {
 }
 
 func (h *Handler) GetByID(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.GetOrDeleteStarRequest](c)
+	req, err := echox.BindAndValidate[contracts.GetStarRequest](c)
 	if err != nil {
 		return err
 	}
 
-	star, err := h.service.GetByID(c.Request().Context(), req.ID)
+	star, err := h.service.GetByID(c.Request().Context(), req.StarID)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (h *Handler) Update(c echo.Context) error {
 	}
 	star := &StarDetails{
 		Star: Star{
-			ID:        req.ID,
+			ID:        req.StarID,
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
 			BirthDate: req.BirthDate,
@@ -104,12 +104,12 @@ func (h *Handler) Update(c echo.Context) error {
 }
 
 func (h *Handler) Delete(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.GetOrDeleteStarRequest](c)
+	req, err := echox.BindAndValidate[contracts.DeleteStarRequest](c)
 	if err != nil {
 		return err
 	}
 
-	if err = h.service.Delete(c.Request().Context(), req.ID); err != nil {
+	if err = h.service.Delete(c.Request().Context(), req.StarID); err != nil {
 		return err
 	}
 
