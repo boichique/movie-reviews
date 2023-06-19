@@ -232,10 +232,8 @@ func (r *Repository) Update(ctx context.Context, movie *MovieDetails) error {
 				OrderNo: i,
 			}
 		})
-		if err = r.updateCast(ctx, currentCast, nextCast); err != nil {
-			return err
-		}
-		return err
+
+		return r.updateCast(ctx, currentCast, nextCast)
 	})
 	if err != nil {
 		return apperrors.EnsureInternal(err)
