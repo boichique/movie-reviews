@@ -28,7 +28,7 @@ type MovieCredit struct {
 }
 
 type MovieCreditInfo struct {
-	StarID  int     `json:"starId"`
+	StarID  int     `json:"star_id"`
 	Role    string  `json:"role"`
 	Details *string `json:"details"`
 }
@@ -47,7 +47,7 @@ type CreateMovieRequest struct {
 	Title       string             `json:"title" validate:"nonzero"`
 	Description string             `json:"description" validate:"nonzero"`
 	ReleaseDate time.Time          `json:"release_date" validate:"nonzero"`
-	GenresID    []int              `json:"genresId"`
+	GenresID    []int              `json:"genresID"`
 	Cast        []*MovieCreditInfo `json:"cast"`
 }
 
