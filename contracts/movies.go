@@ -9,6 +9,7 @@ type Movie struct {
 	ID          int        `json:"id"`
 	Title       string     `json:"title"`
 	ReleaseDate time.Time  `json:"release_date"`
+	AvgRating   *float64   `json:"avg_rating,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`
 	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
 }
@@ -39,8 +40,9 @@ type GetMovieRequest struct {
 
 type GetMoviesPaginatedRequest struct {
 	PaginatedRequest
-	StarID     *int    `query:"starID"`
-	SearchTerm *string `query:"q"`
+	StarID       *int    `query:"starID"`
+	SearchTerm   *string `query:"q"`
+	SortByRating *string `json:"sortByRating" validate:"sort"`
 }
 
 type CreateMovieRequest struct {
@@ -73,6 +75,10 @@ func (r *GetMoviesPaginatedRequest) ToQueryParams() map[string]string {
 
 	if r.SearchTerm != nil {
 		param["q"] = *r.SearchTerm
+	}
+
+	if r.SortByRating != nil {
+		param["sortByRating"] = *r.SortByRating
 	}
 
 	return param

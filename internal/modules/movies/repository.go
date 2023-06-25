@@ -74,10 +74,10 @@ func (r *Repository) Create(ctx context.Context, movie *MovieDetails) error {
 	return nil
 }
 
-func (r *Repository) GetMoviesPaginated(ctx context.Context, searchTerm *string, starID *int, offset int, limit int) ([]*Movie, int, error) {
+func (r *Repository) GetMoviesPaginated(ctx context.Context, searchTerm *string, starID *int, sortByRating *string, offset int, limit int) ([]*Movie, int, error) {
 	b := &pgx.Batch{}
 	selectQuery := dbx.StatementBuilder.
-		Select("id, title,  release_date, created_at").
+		Select("id, title,  release_date, avg_rating, created_at").
 		From("movies").
 		Where("deleted_at IS NULL").
 		Limit(uint64(limit)).
@@ -86,6 +86,10 @@ func (r *Repository) GetMoviesPaginated(ctx context.Context, searchTerm *string,
 		Select("count(*)").
 		From("movies").
 		Where("deleted_at IS NULL")
+
+	if sortByRating != nil {
+		selectQuery = selectQuery.OrderByClause("avg_rating" + *sortByRating)
+	}
 
 	if starID != nil {
 		selectQuery = selectQuery.
@@ -131,6 +135,7 @@ func (r *Repository) GetMoviesPaginated(ctx context.Context, searchTerm *string,
 			Scan(&movie.ID,
 				&movie.Title,
 				&movie.ReleaseDate,
+				&movie.AvgRating,
 				&movie.CreatedAt,
 			); err != nil {
 			return nil, 0, apperrors.Internal(err)
@@ -156,7 +161,7 @@ func (r *Repository) GetByID(ctx context.Context, id int) (*MovieDetails, error)
 	err := r.db.
 		QueryRow(
 			ctx,
-			`SELECT id, version ,title, description, release_date, created_at 
+			`SELECT id, version ,title, description, release_date, avg_rating, created_at 
 			FROM movies 
 			WHERE id = $1 
 			AND deleted_at IS NULL;`,
@@ -168,6 +173,7 @@ func (r *Repository) GetByID(ctx context.Context, id int) (*MovieDetails, error)
 			&movie.Title,
 			&movie.Description,
 			&movie.ReleaseDate,
+			&movie.AvgRating,
 			&movie.CreatedAt,
 		)
 	switch {
@@ -336,4 +342,24 @@ func (r *Repository) updateCast(ctx context.Context, current, next []*stars.Movi
 	}
 
 	return dbx.AdjustRelations(current, next, addFunc, removeFn)
+}
+
+func (r *Repository) Lock(ctx context.Context, tx pgx.Tx, movieID int) error {
+	n, err := tx.
+		Exec(
+			ctx,
+			`SELECT 1
+			FROM movies
+			WHERE deleted_at IS NULL
+			AND id = $1 FOR UPDATE`,
+			movieID)
+	if err != nil {
+		return apperrors.Internal(err)
+	}
+
+	if n.RowsAffected() == 0 {
+		return apperrors.NotFound("movie", "id", movieID)
+	}
+
+	return nil
 }
