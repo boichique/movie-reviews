@@ -15,6 +15,7 @@ import (
 	"github.com/boichique/movie-reviews/internal/modules/auth"
 	"github.com/boichique/movie-reviews/internal/modules/genres"
 	"github.com/boichique/movie-reviews/internal/modules/movies"
+	"github.com/boichique/movie-reviews/internal/modules/reviews"
 	"github.com/boichique/movie-reviews/internal/modules/stars"
 	"github.com/boichique/movie-reviews/internal/modules/users"
 	"github.com/boichique/movie-reviews/internal/validation"
@@ -64,6 +65,7 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	genreModule := genres.NewModule(db)
 	starsModule := stars.NewModule(db, cfg.Pagination)
 	moviesModule := movies.NewModule(db, genreModule, starsModule, cfg.Pagination)
+	reviewsModule := reviews.NewModule(db, cfg.Pagination)
 
 	if err = createAdmin(cfg.Admin, authModule.Service); err != nil {
 		return nil, withClosers(closers, fmt.Errorf("create admin: %w", err))
@@ -108,6 +110,13 @@ func New(ctx context.Context, cfg *config.Config) (*Server, error) {
 	api.GET("/movies/:movieID", moviesModule.Handler.GetByID)
 	api.PUT("/movies/:movieID", moviesModule.Handler.Update, auth.Editor)
 	api.DELETE("/movies/:movieID", moviesModule.Handler.Delete, auth.Editor)
+
+	// reviews group
+	api.POST("/users/:userID/reviews", reviewsModule.Handler.Create, auth.Self)
+	api.GET("/reviews", reviewsModule.Handler.GetReviewsPaginated)
+	api.GET("/reviews/:reviewID", reviewsModule.Handler.GetByID)
+	api.PUT("/users/:userID/reviews/:reviewID", reviewsModule.Handler.Update, auth.Self)
+	api.DELETE("/users/:userID/reviews/:reviewID", reviewsModule.Handler.Delete, auth.Self)
 
 	return &Server{
 		e:       e,

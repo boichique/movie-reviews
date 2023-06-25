@@ -58,4 +58,5 @@ func tests(t *testing.T, port int, cfg *config.Config) {
 	genresAPIChecks(t, c)
 	starsAPIChecks(t, c)
 	moviesAPIChecks(t, c)
+	reviewsAPIChecks(t, c)
 }

@@ -13,7 +13,7 @@ type User struct {
 }
 
 type GetOrDeleteUserRequest struct {
-	UserID int `param:"userid" validate:"nonzero"`
+	UserID int `param:"userID" validate:"nonzero"`
 }
 
 type GetUserByUsernameRequest struct {
@@ -21,11 +21,11 @@ type GetUserByUsernameRequest struct {
 }
 
 type UpdateUserBioRequest struct {
-	UserID int     `param:"userid" validate:"nonzero"`
+	UserID int     `param:"userID" validate:"nonzero"`
 	Bio    *string `json:"bio"`
 }
 
 type UpdateUserRoleRequest struct {
-	UserID int    `param:"userid" validate:"nonzero"`
+	UserID int    `param:"userID" validate:"nonzero"`
 	Role   string `param:"role" validate:"role"`
 }
