@@ -6,19 +6,20 @@ import (
 	"github.com/boichique/movie-reviews/internal/log"
 	"github.com/boichique/movie-reviews/internal/modules/genres"
 	"github.com/boichique/movie-reviews/internal/modules/stars"
+	"golang.org/x/sync/errgroup"
 )
 
 type Service struct {
 	repo          *Repository
 	genresService *genres.Service
-	starService   *stars.Service
+	starsService  *stars.Service
 }
 
-func NewService(repo *Repository, genresService *genres.Service, starService *stars.Service) *Service {
+func NewService(repo *Repository, genresService *genres.Service, starsService *stars.Service) *Service {
 	return &Service{
 		repo:          repo,
 		genresService: genresService,
-		starService:   starService,
+		starsService:  starsService,
 	}
 }
 
@@ -35,8 +36,8 @@ func (s *Service) Create(ctx context.Context, movie *MovieDetails) error {
 	return s.assemble(ctx, movie)
 }
 
-func (s *Service) GetMoviesPaginated(ctx context.Context, searchTerm *string, starID *int, offset int, limit int) ([]*Movie, int, error) {
-	return s.repo.GetMoviesPaginated(ctx, searchTerm, starID, offset, limit)
+func (s *Service) GetMoviesPaginated(ctx context.Context, searchTerm *string, starID *int, sortByRating *string, offset int, limit int) ([]*Movie, int, error) {
+	return s.repo.GetMoviesPaginated(ctx, searchTerm, starID, sortByRating, offset, limit)
 }
 
 func (s *Service) GetByID(ctx context.Context, movieID int) (movie *MovieDetails, err error) {
@@ -70,12 +71,18 @@ func (s *Service) Delete(ctx context.Context, movieID int) error {
 }
 
 func (s *Service) assemble(ctx context.Context, movie *MovieDetails) error {
-	var err error
-	if movie.Genres, err = s.genresService.GetByMovieID(ctx, movie.ID); err != nil {
+	group, groupCtx := errgroup.WithContext(ctx)
+
+	group.Go(func() error {
+		var err error
+		movie.Genres, err = s.genresService.GetByMovieID(groupCtx, movie.ID)
 		return err
-	}
-	if movie.Cast, err = s.starService.GetByMovieID(ctx, movie.ID); err != nil {
+	})
+	group.Go(func() error {
+		var err error
+		movie.Cast, err = s.starsService.GetByMovieID(groupCtx, movie.ID)
 		return err
-	}
-	return nil
+	})
+
+	return group.Wait()
 }

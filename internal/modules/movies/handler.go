@@ -10,11 +10,13 @@ import (
 	"github.com/boichique/movie-reviews/internal/modules/stars"
 	"github.com/boichique/movie-reviews/internal/pagination"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/sync/singleflight"
 )
 
 type Handler struct {
 	service          *Service
 	paginationConfig config.PaginationConfig
+	reqGroup         singleflight.Group
 }
 
 func NewHandler(service *Service, paginationConfig config.PaginationConfig) *Handler {
@@ -61,31 +63,40 @@ func (h *Handler) Create(c echo.Context) error {
 }
 
 func (h *Handler) GetMoviesPaginated(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.GetMoviesPaginatedRequest](c)
-	if err != nil {
-		return err
-	}
-	pagination.SetDefaults(&req.PaginatedRequest, h.paginationConfig)
-	offset, limit := pagination.OffsetLimit(&req.PaginatedRequest)
+	res, err, _ := h.reqGroup.Do(c.Request().RequestURI, func() (any, error) {
+		req, err := echox.BindAndValidate[contracts.GetMoviesPaginatedRequest](c)
+		if err != nil {
+			return nil, err
+		}
+		pagination.SetDefaults(&req.PaginatedRequest, h.paginationConfig)
+		offset, limit := pagination.OffsetLimit(&req.PaginatedRequest)
 
-	movies, total, err := h.service.GetMoviesPaginated(c.Request().Context(), req.SearchTerm, req.StarID, offset, limit)
+		movies, total, err := h.service.GetMoviesPaginated(c.Request().Context(), req.SearchTerm, req.StarID, req.SortByRating, offset, limit)
+		if err != nil {
+			return nil, err
+		}
+		return pagination.Response(&req.PaginatedRequest, total, movies), nil
+	})
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, pagination.Response(&req.PaginatedRequest, total, movies))
+
+	return c.JSON(http.StatusOK, res)
 }
 
 func (h *Handler) GetByID(c echo.Context) error {
-	req, err := echox.BindAndValidate[contracts.GetMovieRequest](c)
+	res, err, _ := h.reqGroup.Do(c.Request().RequestURI, func() (any, error) {
+		req, err := echox.BindAndValidate[contracts.GetMovieRequest](c)
+		if err != nil {
+			return err, nil
+		}
+		return h.service.GetByID(c.Request().Context(), req.MovieID)
+	})
 	if err != nil {
 		return err
 	}
 
-	movie, err := h.service.GetByID(c.Request().Context(), req.MovieID)
-	if err != nil {
-		return err
-	}
-	return c.JSON(http.StatusOK, movie)
+	return c.JSON(http.StatusOK, res)
 }
 
 func (h *Handler) Update(c echo.Context) error {

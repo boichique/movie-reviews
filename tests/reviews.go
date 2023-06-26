@@ -19,9 +19,10 @@ func reviewsAPIChecks(t *testing.T, c *client.Client) {
 	var review1, review2, review3 *contracts.Review
 	t.Run("reviews.CreateReview: success", func(t *testing.T) {
 		cases := []struct {
-			req   *contracts.CreateReviewRequest
-			token string
-			addr  **contracts.Review
+			req       *contracts.CreateReviewRequest
+			token     string
+			addr      **contracts.Review
+			addrMovie **contracts.MovieDetails
 		}{
 			{
 				req: &contracts.CreateReviewRequest{
@@ -34,8 +35,9 @@ func reviewsAPIChecks(t *testing.T, c *client.Client) {
 						"they're glorious. I didn't understand the hype until a few years ago, but now I'm happy with " +
 						"all the films, including the new ones.",
 				},
-				token: reviewer1Token,
-				addr:  &review1,
+				token:     reviewer1Token,
+				addr:      &review1,
+				addrMovie: &StarWars,
 			},
 			{
 				req: &contracts.CreateReviewRequest{
@@ -46,8 +48,9 @@ func reviewsAPIChecks(t *testing.T, c *client.Client) {
 					Content: "A timeless classic with impressive practical effects, despite outdated CGI. A must-watch " +
 						"for fans of the franchise and a testament to its enduring greatness.",
 				},
-				token: reviewer2Token,
-				addr:  &review2,
+				token:     reviewer2Token,
+				addr:      &review2,
+				addrMovie: &StarWars,
 			},
 			{
 				req: &contracts.CreateReviewRequest{
@@ -57,8 +60,9 @@ func reviewsAPIChecks(t *testing.T, c *client.Client) {
 					Title:   "The Emotion Picture...",
 					Content: "I'll write the review later. Sorry",
 				},
-				token: reviewer1Token,
-				addr:  &review3,
+				token:     reviewer1Token,
+				addr:      &review3,
+				addrMovie: &StarTrek,
 			},
 		}
 
@@ -67,6 +71,9 @@ func reviewsAPIChecks(t *testing.T, c *client.Client) {
 			require.NoError(t, err)
 
 			*cc.addr = review
+			movie := getMovie(t, c, cc.req.MovieID)
+			require.NotEmpty(t, movie.AvgRating)
+			**cc.addrMovie = *movie
 		}
 	})
 
@@ -148,6 +155,16 @@ func reviewsAPIChecks(t *testing.T, c *client.Client) {
 		require.Equal(t, req.Content, review3.Content)
 	})
 
+	t.Run("movies.GetMovies: sort by rating", func(t *testing.T) {
+		res, err := c.GetMovies(&contracts.GetMoviesPaginatedRequest{
+			SortByRating: ptr("desc"),
+		})
+		require.NoError(t, err)
+
+		requireRatingEqual(t, 9.5, *res.Items[0].AvgRating)
+		requireRatingEqual(t, 8.0, *res.Items[1].AvgRating)
+	})
+
 	t.Run("reviews.DeleteReview: not found", func(t *testing.T) {
 		nonExistingID := 10000
 		req := &contracts.DeleteReviewRequest{
@@ -199,4 +216,9 @@ func getReview(t *testing.T, c *client.Client, reviewID int) *contracts.Review {
 	}
 
 	return review
+}
+
+func requireRatingEqual(t *testing.T, expected, actual float64) {
+	const insignificantDelta = 0.01
+	require.InDelta(t, expected, actual, insignificantDelta)
 }
