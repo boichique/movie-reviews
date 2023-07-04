@@ -3,3 +3,6 @@
 
 **/bin
 **/*.conf
+
+scrapper/output
+scrapper/.cache

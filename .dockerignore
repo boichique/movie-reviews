@@ -8,6 +8,7 @@
 tern
 integration_tests
 client
+scrapper
 
 Makefile
 **/Dockerfile
