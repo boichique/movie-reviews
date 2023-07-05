@@ -2,6 +2,19 @@ package contracts
 
 import "strconv"
 
+type PaginationSetter interface {
+	SetPage(page int)
+	SetSize(size int)
+}
+
+func (req *PaginatedRequest) SetPage(page int) {
+	req.Page = page
+}
+
+func (req *PaginatedRequest) SetSize(size int) {
+	req.Size = size
+}
+
 type PaginatedRequest struct {
 	Page int `json:"page" query:"page"`
 	Size int `json:"size" query:"size"`
