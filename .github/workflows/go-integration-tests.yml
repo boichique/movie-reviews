@@ -3,10 +3,10 @@ name: Go Integration Tests
 on:
   pull_request:
     branches:
-      - boichique/main
+      - master
   push:
     branches:
-      - boichique/main
+      - master
 
 jobs:
   build-and-test:
