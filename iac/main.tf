@@ -216,7 +216,7 @@ resource "aws_instance" "host_instance" {
                 -e ADMIN_EMAIL=$ADMIN_EMAIL \
                 -e ADMIN_PASSWORD=$ADMIN_PASSWORD \
                 -e DB_URL=$DB_URL \
-                -p 80:8000 \
+                -p 80:8080 \
                 boichique/movie-reviews:latest
               sudo docker run -d \
                 --name watchtower \
