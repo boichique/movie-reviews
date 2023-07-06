@@ -9,6 +9,7 @@ tern
 integration_tests
 client
 scrapper
+iac
 
 Makefile
 **/Dockerfile

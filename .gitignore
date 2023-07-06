@@ -6,3 +6,4 @@
 
 scrapper/output
 scrapper/.cache
+iac/.terraform
