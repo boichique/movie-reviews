@@ -40,3 +40,4 @@
 - JWT
 - Postgress
 - Docker
+- Terraform
